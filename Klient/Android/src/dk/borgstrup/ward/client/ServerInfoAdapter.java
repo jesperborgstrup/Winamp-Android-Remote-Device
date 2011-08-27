@@ -1,16 +1,26 @@
 package dk.borgstrup.ward.client;
 
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
+import dk.borgstrup.ward.client.connection.ServerAdministrator;
 import dk.borgstrup.ward.client.connection.ServerConfiguration;
+import dk.borgstrup.ward.client.connection.ServerInfo;
 
 public class ServerInfoAdapter extends BaseAdapter {
 	
 	private ServerConfiguration config;
+	private ServerAdministrator admin;
+	private Context context;
 
-	public ServerInfoAdapter(ServerConfiguration config) {
-		this.config = config;
+	public ServerInfoAdapter(Context context, ServerAdministrator admin) {
+		super();
+		this.context = context;
+		this.admin = admin;
+		this.config = admin.getConfiguration();
 	}
 
 	@Override
@@ -30,8 +40,22 @@ public class ServerInfoAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
-		return null;
+		View v = convertView;
+		
+		if (v == null) {
+			LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			v = vi.inflate(R.layout.server_row, null);
+		}
+		
+		ServerInfo server = this.config.getServers().get(position);
+		if (server != null) {
+			TextView title = (TextView)v.findViewById(R.id.server_row_title);
+			TextView description = (TextView)v.findViewById(R.id.server_row_description);
+			title.setText( server.getName() );
+			description.setText( server.getHost() );
+		}
+		
+		return v;
 	}
 
 }

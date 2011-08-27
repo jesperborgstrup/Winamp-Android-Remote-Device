@@ -1,8 +1,9 @@
 package dk.borgstrup.ward.client;
 
-import java.net.UnknownHostException;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -12,14 +13,11 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
+import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
 public class MainActivity extends Activity implements WardConnectionListener {
 	
-	private WardConnection conn;
-	
 	private SeekBar volumeControl;
-	private Button reConnectButton;
 	
 	private Button previousButton;
 	private Button playButton;
@@ -29,10 +27,13 @@ public class MainActivity extends Activity implements WardConnectionListener {
 	
 	private Resources res;
 	
-	private String host;
-	private int port;
+	private WardApplication app;
 	
 	private TextView nowPlayingLabel;
+	private ProgressDialog setupDialog;
+	
+	private int messageCounter = 0;
+	private static int MESSAGES_TO_RECEIVE_DURING_SETUP = 3;
 	
     /** Called when the activity is first created. */
     @Override
@@ -40,53 +41,45 @@ public class MainActivity extends Activity implements WardConnectionListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        app = (WardApplication)getApplication();
+        
         res = getResources();
         initializeComponents();
         
-        host = getIntent().getStringExtra(Messages.EXTRA_SERVER_HOST);
-        port = getIntent().getIntExtra(Messages.EXTRA_SERVER_PORT, 9273);
+        app.conn.addListener( this );
         
-       	conn = new WardConnection( host, port );
-        conn.addListener( this );
-        
+        setupDialog = new ProgressDialog(this);
+        setupDialog.setTitle( R.string.setting_up_connection );
+        setupDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        setupDialog.setCancelable(true);
+        setupDialog.setOnCancelListener(new OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				dialog.dismiss();
+				MainActivity.this.finish();
+			}
+		});
     }
+  
     
     @Override
     public void onStart() {
     	super.onStart();
-      	try {
-			if (!conn.Connect()) {
-				finish();
-			}
-		} catch (UnknownHostException e) {
-			Toast( R.string.could_not_connect, host ); 
-			finish();
-		}
+    	messageCounter = 0;
+    	updateUI();
+    	
+    	setupDialog.show();
     }
   
-    @Override
+	@Override
     public void onConfigurationChanged(Configuration newConfig) {
     	super.onConfigurationChanged(newConfig);
     }
     
-    public void connect() {
-        try {
-			if (conn.Connect()) {
-			    Toast( "Connected!" );
-			    updateUI();
-			} else {
-				Toast("Failed to connect...");
-			}
-		} catch (UnknownHostException e) {
-			Toast( R.string.could_not_connect, host ); 
-			finish();
-		}
-    }
-    
     private void updateUI() {
-        conn.requestVolume();
-        conn.requestPlaybackStatus();
-        conn.requestCurrentTitle();
+    	app.conn.requestVolume();
+    	app.conn.requestPlaybackStatus();
+    	app.conn.requestCurrentTitle();
     }
 
 	private void initializeComponents() {
@@ -95,7 +88,6 @@ public class MainActivity extends Activity implements WardConnectionListener {
         pauseButton = (Button)findViewById(R.id.mainPauseButton);
         stopButton = (Button)findViewById(R.id.mainStopButton);
         nextButton = (Button)findViewById(R.id.mainNextButton);
-        reConnectButton = (Button)findViewById(R.id.mainReConnectButton);
 
         nowPlayingLabel = (TextView)findViewById(R.id.mainNowPlaying);
         volumeControl = (SeekBar)findViewById(R.id.mainVolumeControl);
@@ -124,7 +116,7 @@ public class MainActivity extends Activity implements WardConnectionListener {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
 				if (fromUser)
-					conn.setVolume(progress);
+					app.conn.setVolume(progress);
 			}
 		});
 	}
@@ -133,66 +125,43 @@ public class MainActivity extends Activity implements WardConnectionListener {
 		previousButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				conn.previous();
+				app.conn.previous();
 			}
 		});
         playButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				conn.play();
+				app.conn.play();
 			}
 		});
         pauseButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				conn.pause();
+				app.conn.pause();
 			}
 		});
         stopButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				conn.stop();
+				app.conn.stop();
 			}
 		});
         nextButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				conn.next();
+				app.conn.next();
 			}
 		});
         
-        reConnectButton.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				connect();
-			}
-		});
 	}
     
-    private void Toast(String msg) {
-    	Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    	Settings.LogI( "Toast: " + msg );
-    }
-
-    private void Toast(int rId) {
-    	String s = getResources().getString(rId);
-    	Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-    	Settings.LogI( "Toast: " + s );
-    }
-
-    private void Toast(int rId, Object... formatArgs) {
-    	String s = getResources().getString(rId, formatArgs);
-    	Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-    	Settings.LogI( "Toast: " + s );
-    }
-
 	@Override
 	public void receivedMessage(final byte message, final Bundle data) {
 		runOnUiThread(new Runnable() {
 			
 			@Override
 			public void run() {
+				
 				switch (message) {
 				case Messages.GET_VOLUME:
 					volumeControl.setProgress( data.getInt( Messages.EXTRA_VOLUME ) ) ;
@@ -206,9 +175,15 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				case Messages.GET_CURRENT_TITLE:
 					String title = data.getString( Messages.EXTRA_CURRENT_TITLE );
 					nowPlayingLabel.setText( res.getString( R.string.now_playing_string, title ) );
+					break;
 				}
 			}
 		});
 		Settings.LogI( "MainActivity receivedMessage: " + message + " ("+data.toString()+")" ); 
+
+		messageCounter++;
+		if (messageCounter >= MESSAGES_TO_RECEIVE_DURING_SETUP && setupDialog.isShowing()) {
+			setupDialog.dismiss();
+		}
 	}
 }

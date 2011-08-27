@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,9 +21,12 @@ public class StartActivity extends Activity {
 	private Button selectButton;
 	private Button configButton;
 	
-	private ServerAdministrator serverAdmin;
 	private ServerConfiguration serverConfig;
 	private ServerInfo latestServer;
+	
+	private Resources res;
+	
+	private WardApplication app;
 
     /** Called when the activity is first created. */
     @Override
@@ -30,22 +34,36 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start);
         
-        serverAdmin = new ServerAdministrator(this);
-        serverConfig = serverAdmin.readConfiguration();
-        latestServer = serverConfig.getLatest();
+        app = (WardApplication)getApplication();
+        res = getResources();
         
         assignButtons();
         
-        initializeButtons();
     }
+    
+    @Override
+    public void onStart() {
+    	super.onStart();
+        serverConfig = app.serverAdmin.getConfiguration();
+        latestServer = serverConfig.getLatest();
+
+        initializeButtons();
+}
 
 	private void initializeButtons() {
+		if (latestServer == null) {
+			latestButton.setVisibility(View.GONE);
+		} else {
+			latestButton.setVisibility(View.VISIBLE);
+		}
 		latestButton.setOnClickListener( new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				connectTo( latestServer );
 			}
 		});
+		
+		selectButton.setEnabled( serverConfig.getServers().size() > 0 );
 		
 		selectButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -88,11 +106,13 @@ public class StartActivity extends Activity {
 	}
     
     public void connectTo(ServerInfo server) {
-   		Intent i = new Intent(this, MainActivity.class);
-   		i.putExtra(Messages.EXTRA_SERVER_HOST, server.getHost());
-   		i.putExtra(Messages.EXTRA_SERVER_PORT, server.getPort());
-   		startActivity( i );
-   		Toast.makeText(this, "Connecting to " +server.getName()+"...", Toast.LENGTH_SHORT).show();
+    	if (app.connectTo(server)) {
+    		app.serverAdmin.getConfiguration().setLatest(server);
+    		Intent i = new Intent(this, MainActivity.class);
+    		startActivity(i);
+    	} else {
+    		Toast.makeText(this, res.getString(R.string.could_not_connect, server.getHost()), Toast.LENGTH_LONG).show();
+    	}
     }
     
 }

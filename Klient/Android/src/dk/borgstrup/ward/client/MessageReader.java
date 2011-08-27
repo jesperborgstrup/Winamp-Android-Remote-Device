@@ -3,6 +3,8 @@ package dk.borgstrup.ward.client;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import dk.borgstrup.ward.client.connection.WardConnection;
+
 import android.os.Bundle;
 
 public class MessageReader extends Thread {

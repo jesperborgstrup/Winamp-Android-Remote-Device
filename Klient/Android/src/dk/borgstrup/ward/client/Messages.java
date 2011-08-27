@@ -18,6 +18,7 @@ public class Messages {
 	
 	public static final String EXTRA_SERVER_HOST = "server_host";
 	public static final String EXTRA_SERVER_PORT = "server_port";
+	public static final String EXTRA_SERVER_ADMIN = "server_admin";
 	
 	public static final String EXTRA_VOLUME = "volume";
 	public static final String EXTRA_PLAYBACK_STATUS = "playback_status";

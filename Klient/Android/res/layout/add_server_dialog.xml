@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" android:orientation="vertical" android:padding="10dp">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_name"></TextView>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="" android:id="@+id/add_server_dialog_name"></EditText>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_host"></TextView>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="" android:id="@+id/add_server_dialog_host" android:inputType="textNoSuggestions"></EditText>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_port"></TextView>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="9273" android:id="@+id/add_server_dialog_port" android:inputType="number"></EditText>
+    <Button android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/add_server_dialog_add" android:text="@string/server_config_add"></Button>
+</LinearLayout>

@@ -10,4 +10,14 @@
     <string name="start_config_servers">Configure servers</string>
     <string name="server_config_title">Configure servers</string>
     <string name="could_not_connect">Could not connect to %s</string>
+    <string name="server_config_remove">Remove</string>
+    <string name="server_config_add">Add server</string>
+    <string name="add_server_dialog_name">Name</string>
+    <string name="add_server_dialog_host">Hostname/IP:</string>
+    <string name="add_server_dialog_port">Port:</string>
+    <string name="add_server_dialog_name_exists">A server with the given name already exists. Please choose a different name.</string>
+    <string name="add_server_dialog_invalid_port">Invalid value for port number. Please enter a positive number &lt;= 65535</string>
+    <string name="add_server_dialog_enter_name">Please enter a name for the server</string>
+    <string name="add_server_dialog_enter_host">Please enter a hostname or an IP address for the server.</string>
+    <string name="setting_up_connection">Setting up connection. Please wait...</string>
 </resources>

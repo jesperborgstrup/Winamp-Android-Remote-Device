@@ -14,36 +14,54 @@ public final class R {
         public static final int icon=0x7f020000;
     }
     public static final class id {
-        public static final int linearLayout1=0x7f050003;
-        public static final int mainNextButton=0x7f050008;
-        public static final int mainNowPlaying=0x7f050002;
-        public static final int mainPauseButton=0x7f050006;
-        public static final int mainPlayButton=0x7f050005;
-        public static final int mainPreviousButton=0x7f050004;
-        public static final int mainReConnectButton=0x7f050001;
-        public static final int mainStopButton=0x7f050007;
-        public static final int mainVolumeControl=0x7f050000;
-        public static final int server_config_list=0x7f050009;
-        public static final int server_row_description=0x7f05000b;
-        public static final int server_row_title=0x7f05000a;
-        public static final int start_config_servers=0x7f050010;
-        public static final int start_latest=0x7f05000e;
-        public static final int start_select_server=0x7f05000f;
-        public static final int textView1=0x7f05000c;
-        public static final int textView2=0x7f05000d;
+        public static final int add_server_dialog_add=0x7f060003;
+        public static final int add_server_dialog_host=0x7f060001;
+        public static final int add_server_dialog_name=0x7f060000;
+        public static final int add_server_dialog_port=0x7f060002;
+        public static final int linearLayout1=0x7f060006;
+        public static final int mainNextButton=0x7f06000b;
+        public static final int mainNowPlaying=0x7f060005;
+        public static final int mainPauseButton=0x7f060009;
+        public static final int mainPlayButton=0x7f060008;
+        public static final int mainPreviousButton=0x7f060007;
+        public static final int mainStopButton=0x7f06000a;
+        public static final int mainVolumeControl=0x7f060004;
+        public static final int server_config_list=0x7f06000c;
+        public static final int server_config_menu_add=0x7f060014;
+        public static final int server_row_description=0x7f06000e;
+        public static final int server_row_title=0x7f06000d;
+        public static final int start_config_servers=0x7f060013;
+        public static final int start_latest=0x7f060011;
+        public static final int start_select_server=0x7f060012;
+        public static final int textView1=0x7f06000f;
+        public static final int textView2=0x7f060010;
     }
     public static final class layout {
-        public static final int main=0x7f030000;
-        public static final int server_config=0x7f030001;
-        public static final int server_row=0x7f030002;
-        public static final int start=0x7f030003;
+        public static final int add_server_dialog=0x7f030000;
+        public static final int main=0x7f030001;
+        public static final int server_config=0x7f030002;
+        public static final int server_row=0x7f030003;
+        public static final int start=0x7f030004;
+    }
+    public static final class menu {
+        public static final int server_config_menu=0x7f050000;
     }
     public static final class string {
+        public static final int add_server_dialog_enter_host=0x7f040012;
+        public static final int add_server_dialog_enter_name=0x7f040011;
+        public static final int add_server_dialog_host=0x7f04000d;
+        public static final int add_server_dialog_invalid_port=0x7f040010;
+        public static final int add_server_dialog_name=0x7f04000c;
+        public static final int add_server_dialog_name_exists=0x7f04000f;
+        public static final int add_server_dialog_port=0x7f04000e;
         public static final int app_name=0x7f040001;
         public static final int could_not_connect=0x7f040009;
         public static final int hello=0x7f040000;
         public static final int now_playing_string=0x7f040002;
+        public static final int server_config_add=0x7f04000b;
+        public static final int server_config_remove=0x7f04000a;
         public static final int server_config_title=0x7f040008;
+        public static final int setting_up_connection=0x7f040013;
         public static final int start_config_servers=0x7f040007;
         public static final int start_connect_to=0x7f040006;
         public static final int start_latest=0x7f040005;

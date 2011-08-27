@@ -1,6 +1,7 @@
 package dk.borgstrup.ward.client.connection;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ServerConfiguration {
@@ -15,6 +16,7 @@ public class ServerConfiguration {
 	public ServerConfiguration(List<ServerInfo> servers, ServerInfo latest) {
 		this.servers = servers;
 		this.latest  = latest;
+		Collections.sort( this.servers );
 	}
 	
 	public List<ServerInfo> getServers() {
@@ -42,7 +44,8 @@ public class ServerConfiguration {
 	}
 	
 	public void setLatest(ServerInfo latest) {
-		this.latest = latest;
+		if (nameExists(latest))
+			this.latest = latest;
 	}
 	
 	public void addServer(ServerInfo server) {
@@ -52,12 +55,19 @@ public class ServerConfiguration {
 	}
 	
 	public void removeServer(ServerInfo server) {
+		if (server.equals(latest) ) {
+			latest = null;
+		}
 		servers.remove( server );
 	}
 	
 	public boolean nameExists(ServerInfo server) {
+		return nameExists(server.getName());
+	}
+	
+	public boolean nameExists(String server) {
 		for (ServerInfo s: servers) {
-			if (s.getName().equals(server.getName()))
+			if (s.getName().equals(server))
 				return true;
 		}
 		return false;
