@@ -2,6 +2,6 @@
 
 class Settings:
 	
-	hostname = "localhost"
+	hostname = ""
 	port = 9273
-	LOG_LEVEL = 5
+	LOG_LEVEL = 6

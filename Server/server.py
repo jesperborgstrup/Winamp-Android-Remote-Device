@@ -1,6 +1,8 @@
-﻿import socket, sys, time, threading, settings, struct
+﻿import socket, sys, time, threading, settings, struct, pickle
+from messages import Messages
 
 S = settings.Settings()
+
 
 class Server():
 	threads = []
@@ -122,43 +124,83 @@ class ClientThread( threading.Thread ):
 		else:
 			self.data += char
 			
-	def send_session_started(self, session_id):
-		self.client.send("\x02")
-		self.client.send(struct.pack(">i", session_id ) )
-		self.client.send("\x00")
-		
-	def test(self, message):
-		self.server.log(  "Received from %s:%s: test(%s)" % (str(self.host), str(self.port), message), level=4 )
-		
+	def play(self):
+		self.server.log(  "Received from %s:%s: play()" % (str(self.host), str(self.port)), level=4 )
+		self.server.winamp.play()
+		self.send_playback_status()
+			
+	def stop(self):
+		self.server.log(  "Received from %s:%s: stop()" % (str(self.host), str(self.port)), level=4 )
+		self.server.winamp.stop()
+		self.send_playback_status()
+			
+	def pause(self):
+		self.server.log(  "Received from %s:%s: pause()" % (str(self.host), str(self.port)), level=4 )
+		self.server.winamp.pause()
+		self.send_playback_status()
+			
+	def previous(self):
+		self.server.log(  "Received from %s:%s: previous()" % (str(self.host), str(self.port)), level=4 )
+		self.server.winamp.previous()
+		self.send_playback_status()
+		self.send_current_title()
+			
+	def next(self):
+		self.server.log(  "Received from %s:%s: next()" % (str(self.host), str(self.port)), level=4 )
+		self.server.winamp.next()
+		self.send_playback_status()
+		self.send_current_title()
+			
 	def set_volume(self, amount):
 		self.server.log(  "Received from %s:%s: set_volume(%d)" % (str(self.host), str(self.port), amount), level=4 )
 		self.server.winamp.setVolume( amount )
+		
+	def get_volume(self):
+		self.server.log(  "Received from %s:%s: get_volume()" % (str(self.host), str(self.port) ), level=6 )
+		self.send_volume()
+		
+	def send_volume(self):
+		self.client.send( Messages.GET_VOLUME )
+		self.client.send( struct.pack(">i", self.server.winamp.getVolume()))
+		self.client.send( Messages.STOP )
+		
+	def get_playback_status(self):
+		self.server.log(  "Received from %s:%s: get_playback_status()" % (str(self.host), str(self.port) ), level=6 )
+		self.send_playback_status()
+		
+	def send_playback_status(self):
+		self.client.send( Messages.GET_PLAYBACK_STATUS )
+		status = self.server.winamp.getPlaybackStatus()
+		self.server.log( "Sending playback status: %d" % status, level=5 )
+		self.client.send( struct.pack(">i", self.server.winamp.getPlaybackStatus()))
+		self.client.send( Messages.STOP )
+		
+	def get_current_title(self):
+		self.server.log(  "Received from %s:%s: get_current_title()" % (str(self.host), str(self.port) ), level=6 )
+		self.send_current_title()
+		
+	def send_current_title(self):
+		self.client.send( Messages.GET_CURRENT_TITLE )
+		self.send_string( self.server.winamp.getCurrentPlayingTitle() )
+		self.client.send( Messages.STOP )
+		
+	def send_string(self, string):
+		encoded = string.encode('utf-8')
+		# First two bytes of a string transmission is the length of the encoded string
+		self.client.send( struct.pack( ">H", len( encoded ) ) )
+		self.client.send( encoded )
 
-	def start_session(self, device_id):
-		if self.debug:
-			self.server.log(  "Received from %s:%s: start_session(%s)" % (str(self.host), str(self.port), device_id), level=3 )
-		session_id = self.server.start_session(device_id)
-		self.send_session_started( session_id )
-		
-	def probe(self, session_id, time, latitude, longitude):
-		if self.debug:
-			self.server.log(  "Received from %s:%s: probe(%d,%d,%.6f,%.6f)" % (str(self.host), str(self.port), session_id, time, latitude, longitude), level=4 )
-		self.server.probe( session_id, time, latitude, longitude )
+messages = [[Messages.PLAY,       ClientThread.play],
+			[Messages.STOP,       ClientThread.stop],
+			[Messages.PAUSE,      ClientThread.pause],
+			[Messages.PREVIOUS,   ClientThread.previous],
+			[Messages.NEXT,       ClientThread.next],
+			[Messages.SET_VOLUME, ClientThread.set_volume,    ClientThread.parse_byte],
 			
-	def queue_status(self, session_id, time, status):
-		if self.debug:
-			self.server.log(  "Received from %s:%s: queue_status(%d,%d,%d)" % (str(self.host), str(self.port), session_id, time, status), level=3 )
-		self.server.queue_status( session_id, time, status )
-		
-	def stop_session(self, session_id):
-		if self.debug:
-			self.server.log(  "Received from %s:%s: stop_session(%d)" % (str(self.host), str(self.port), session_id), level=3 )
-		self.server.stop_session( session_id )
-		
-messages = [[chr(1), ClientThread.test,			 ClientThread.parse_string],
- 			[chr(10),ClientThread.set_volume,    ClientThread.parse_byte],
-			[chr(4), ClientThread.queue_status,  ClientThread.parse_int,   ClientThread.parse_int, ClientThread.parse_byte],
-			[chr(5), ClientThread.stop_session,  ClientThread.parse_int]]
+			[Messages.GET_VOLUME, ClientThread.get_volume],
+			[Messages.GET_PLAYBACK_STATUS, ClientThread.get_playback_status],
+			[Messages.GET_CURRENT_TITLE, ClientThread.get_current_title]]
+
 
 class CommandBuffer:
 	def __init__(self):

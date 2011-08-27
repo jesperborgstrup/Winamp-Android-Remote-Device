@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, MainActivity!</string>
+    <string name="app_name">Winamp Remote</string>
+    <string name="now_playing_string">Now playing: %s</string>
+    <string name="start_title">WARD</string>
+    <string name="start_select_server">Select server</string>
+    <string name="start_latest">Latest (%s)</string>
+    <string name="start_connect_to">Connect to:</string>
+    <string name="start_config_servers">Configure servers</string>
+    <string name="server_config_title">Configure servers</string>
+    <string name="could_not_connect">Could not connect to %s</string>
+</resources>

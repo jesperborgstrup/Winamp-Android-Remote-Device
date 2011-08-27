@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="@string/hello"
+    />
+<SeekBar 
+    android:id="@+id/mainVolumeControl" android:layout_height="wrap_content" android:layout_width="fill_parent" android:max="255" android:progress="128"></SeekBar>
+    <Button android:id="@+id/mainReConnectButton" android:text="ReConnect!" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <TextView android:id="@+id/mainNowPlaying" android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="center" android:text="@string/now_playing_string"></TextView>
+    <LinearLayout android:id="@+id/linearLayout1" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <Button android:text="&lt;" android:id="@+id/mainPreviousButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+        <Button android:text="Pl" android:id="@+id/mainPlayButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+        <Button android:text="Pa" android:id="@+id/mainPauseButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+        <Button android:text="St" android:id="@+id/mainStopButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+        <Button android:text="&gt;" android:id="@+id/mainNextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+    </LinearLayout>
+</LinearLayout>

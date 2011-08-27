@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" android:orientation="vertical">
+    <TextView android:layout_height="wrap_content" android:text="@string/start_title" android:id="@+id/textView1" android:gravity="center" android:layout_width="fill_parent" android:textSize="40dp" android:textStyle="bold" android:layout_marginBottom="10dp"></TextView>
+    <TextView android:layout_height="wrap_content" android:id="@+id/textView2" android:gravity="center" android:layout_width="fill_parent" android:layout_marginBottom="10dp" android:text="@string/start_connect_to"></TextView>
+    <Button android:id="@+id/start_latest" android:text="@string/start_latest" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal|center" android:layout_marginBottom="10dp"></Button>
+    <Button android:id="@+id/start_select_server" android:text="@string/start_select_server" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal|center" android:layout_marginBottom="10dp"></Button>
+    <Button android:id="@+id/start_config_servers" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal|center" android:layout_marginBottom="10dp" android:text="@string/start_config_servers"></Button>
+</LinearLayout>

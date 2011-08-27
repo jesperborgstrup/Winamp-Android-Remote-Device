@@ -411,6 +411,10 @@ class Winamp(object):
 	def setPlaylistPosition(self, position):
 		"""Sets the playlist position in the given position number (zero based)."""
 		return self.__sendUserMessage(position, self.IPC_SETPLAYLISTPOS)
+		
+	def getVolume(self):
+		"""Gets the volume of Winamp. Values range from 0-255"""
+		return self.__sendUserMessage(-666, self.IPC_SETVOLUME)
 	
 	def setVolume(self, volume):
 		"""Sets the internal Winamp's volume meter. Will only accept values in the range 0-255."""

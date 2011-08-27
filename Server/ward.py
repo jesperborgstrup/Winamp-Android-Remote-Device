@@ -15,13 +15,14 @@ if __name__ == "__main__":
 	hostname = S.hostname
 	port = S.port
 	
+	winamp = Winamp()
+	
 	log("Initiating server socket on %s:%d..." % (hostname, port), 3 )
-	server = Server(hostname, port, Winamp())
+	server = Server(hostname, port, winamp)
 	log("Starting server...", 2)
 	server.run()
 	
 	
-	#winamp = Winamp()
 	
 	#for i in range(5):
 #		print "playing"#
