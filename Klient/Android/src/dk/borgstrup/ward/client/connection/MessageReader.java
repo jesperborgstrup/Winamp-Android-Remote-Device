@@ -1,16 +1,16 @@
-package dk.borgstrup.ward.client;
+package dk.borgstrup.ward.client.connection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import dk.borgstrup.ward.client.connection.WardConnection;
+import dk.borgstrup.ward.client.Settings;
 
 import android.os.Bundle;
 
 public class MessageReader extends Thread {
 	
 	private DataInputStream stream;
-	private Byte message = null;
+	private Short message = null;
 	private WardConnection conn;
 	
 	public MessageReader(DataInputStream stream, WardConnection conn) 
@@ -26,7 +26,7 @@ public class MessageReader extends Thread {
 		while (true) {
 			try {
 				if (message == null) {
-					message = stream.readByte();
+					message = stream.readShort();
 				} else {
 					switch (message) {
 					case Messages.GET_VOLUME:
@@ -37,6 +37,9 @@ public class MessageReader extends Thread {
 						break;
 					case Messages.GET_CURRENT_TITLE:
 						tryParseGetCurrentTitle();
+						break;
+					case Messages.GET_PLAYLIST:
+						tryParseGetPlaylist();
 						break;
 					}
 					message = null;
@@ -70,6 +73,20 @@ public class MessageReader extends Thread {
 		String title = readString();
 		data.putString( Messages.EXTRA_CURRENT_TITLE, title );
 		conn.postMessageToListeners( Messages.GET_CURRENT_TITLE, data );
+	}
+
+	private void tryParseGetPlaylist() throws IOException {
+		Settings.LogI("tryparsegetPlaylist()");
+		Bundle data = new Bundle(1);
+		int length = stream.readInt();
+		String[] playlist = new String[length];
+		for (int i = 0; i < length; i++ ) {
+			String s = readString();
+			Settings.LogI("Playlist item: " + s);
+			playlist[i] = s;
+		}
+		data.putStringArray( Messages.EXTRA_PLAYLIST_ITEMS, playlist );
+		conn.postMessageToListeners( Messages.GET_PLAYLIST, data );
 	}
 
 	private String readString() throws IOException {

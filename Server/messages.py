@@ -4,15 +4,18 @@ class Messages:
 	
 	STOP =       chr( 0 )
 	
-	PLAY =       chr( 1 )
-	STOP =       chr( 2 )
-	PAUSE =      chr( 3 )
-	PREVIOUS =   chr( 4 )
-	NEXT =       chr( 5 )
+	PLAY =       1
+	STOP =       2
+	PAUSE =      3
+	PREVIOUS =   4
+	NEXT =       5
 	
-	SET_VOLUME = chr( 10 )
+	SET_VOLUME = 10
+	PLAY_PLAYLIST_ITEM = 20
 	
-	GET_VOLUME = chr( 110 )
+	GET_VOLUME = 110
 	
-	GET_PLAYBACK_STATUS = chr( 115 )
-	GET_CURRENT_TITLE = chr( 120 )
+	GET_PLAYBACK_STATUS = 115
+	GET_CURRENT_TITLE = 120
+	
+	GET_PLAYLIST = 150

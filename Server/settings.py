@@ -4,4 +4,4 @@ class Settings:
 	
 	hostname = ""
 	port = 9273
-	LOG_LEVEL = 6
+	LOG_LEVEL = 5

@@ -1,7 +1,9 @@
-package dk.borgstrup.ward.client;
+package dk.borgstrup.ward.client.connection;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import dk.borgstrup.ward.client.Settings;
 
 public class MessageWriter {
 	
@@ -14,7 +16,7 @@ public class MessageWriter {
 	
 	private void writeMessageType( int type ) throws IOException
 	{
-		stream.writeByte( type );
+		stream.writeInt( type );
 	}
 	
 	private void writeStopMessage() throws IOException
@@ -58,7 +60,7 @@ public class MessageWriter {
 		writeEmptyMessage(Messages.NEXT);
 	}
 
-	private void writeEmptyMessage(byte message) {
+	private void writeEmptyMessage(int message) {
 		try {
 			writeMessageType( message );
 			writeStopMessage();
@@ -91,6 +93,27 @@ public class MessageWriter {
 			writeStopMessage();
 		} catch (IOException e) {
 			Settings.LogW("MessageWriter::RequestCurrentTitle::IOException", e);
+		}
+	}
+
+	public void requestPlaylist() {
+		try {
+			writeMessageType( Messages.GET_PLAYLIST );
+			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_PLAYLIST");
+		} catch (IOException e) {
+			Settings.LogW("MessageWriter::RequestPlaylist::IOException", e);
+		}
+	}
+
+	public void playPlaylistItem(int position) {
+		try {
+			writeMessageType( Messages.PLAY_PLAYLIST_ITEM );
+			stream.writeInt( position );
+			writeStopMessage();
+			Settings.LogI("MessageWriter send PLAY_PLAYLIST_ITEM ("+position+")");
+		} catch (IOException e) {
+			Settings.LogW("MessageWriter::playPlaylistItem::IOException", e);
 		}
 	}
 

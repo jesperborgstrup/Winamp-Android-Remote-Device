@@ -4,32 +4,37 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import dk.borgstrup.ward.client.connection.Messages;
 import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
 public class MainActivity extends Activity implements WardConnectionListener {
 	
 	private SeekBar volumeControl;
 	
-	private Button previousButton;
-	private Button playButton;
-	private Button pauseButton;
-	private Button stopButton;
-	private Button nextButton;
+	private ImageButton previousButton;
+	private ImageButton playButton;
+	private ImageButton pauseButton;
+	private ImageButton nextButton;
+	
+	private TextView volumeLabel;
 	
 	private Resources res;
 	
 	private WardApplication app;
 	
-	private TextView nowPlayingLabel;
 	private ProgressDialog setupDialog;
 	
 	private int messageCounter = 0;
@@ -40,7 +45,6 @@ public class MainActivity extends Activity implements WardConnectionListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
         app = (WardApplication)getApplication();
         
         res = getResources();
@@ -61,6 +65,11 @@ public class MainActivity extends Activity implements WardConnectionListener {
 		});
     }
   
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+    	app.conn.removeListener( this );
+    }
     
     @Override
     public void onStart() {
@@ -83,13 +92,13 @@ public class MainActivity extends Activity implements WardConnectionListener {
     }
 
 	private void initializeComponents() {
-        previousButton = (Button)findViewById(R.id.mainPreviousButton);
-        playButton = (Button)findViewById(R.id.mainPlayButton);
-        pauseButton = (Button)findViewById(R.id.mainPauseButton);
-        stopButton = (Button)findViewById(R.id.mainStopButton);
-        nextButton = (Button)findViewById(R.id.mainNextButton);
+        previousButton = (ImageButton)findViewById(R.id.mainPreviousButton);
+        playButton = (ImageButton)findViewById(R.id.mainPlayButton);
+        pauseButton = (ImageButton)findViewById(R.id.mainPauseButton);
+        nextButton = (ImageButton)findViewById(R.id.mainNextButton);
+        
+        volumeLabel = (TextView)findViewById(R.id.main_volume_label);
 
-        nowPlayingLabel = (TextView)findViewById(R.id.mainNowPlaying);
         volumeControl = (SeekBar)findViewById(R.id.mainVolumeControl);
 
         initializeButtons();
@@ -117,6 +126,8 @@ public class MainActivity extends Activity implements WardConnectionListener {
 					boolean fromUser) {
 				if (fromUser)
 					app.conn.setVolume(progress);
+					int percent = progress * 100 / 255;
+					volumeLabel.setText( res.getString( R.string.volume_percent, percent ) );
 			}
 		});
 	}
@@ -140,12 +151,6 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				app.conn.pause();
 			}
 		});
-        stopButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				app.conn.stop();
-			}
-		});
         nextButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -156,7 +161,7 @@ public class MainActivity extends Activity implements WardConnectionListener {
 	}
     
 	@Override
-	public void receivedMessage(final byte message, final Bundle data) {
+	public void receivedMessage(final int message, final Bundle data) {
 		runOnUiThread(new Runnable() {
 			
 			@Override
@@ -164,17 +169,19 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				
 				switch (message) {
 				case Messages.GET_VOLUME:
-					volumeControl.setProgress( data.getInt( Messages.EXTRA_VOLUME ) ) ;
+					int volume = data.getInt( Messages.EXTRA_VOLUME );
+					volumeControl.setProgress( volume ) ;
+					int percent = volume * 100 / 255;
+					volumeLabel.setText( res.getString( R.string.volume_percent, percent ) );
 					break;
 				case Messages.GET_PLAYBACK_STATUS:
 					int status = data.getInt( Messages.EXTRA_PLAYBACK_STATUS );
 					playButton.setEnabled( status != Messages.PLAYBACK_PLAYING );
-					pauseButton.setEnabled( status != Messages.PLAYBACK_PAUSE );
-					stopButton.setEnabled( status != Messages.PLAYBACK_NOT_PLAYING );
+					pauseButton.setEnabled( status == Messages.PLAYBACK_PLAYING );
 					break;
 				case Messages.GET_CURRENT_TITLE:
 					String title = data.getString( Messages.EXTRA_CURRENT_TITLE );
-					nowPlayingLabel.setText( res.getString( R.string.now_playing_string, title ) );
+					MainActivity.this.setTitle( title );
 					break;
 				}
 			}
@@ -186,4 +193,25 @@ public class MainActivity extends Activity implements WardConnectionListener {
 			setupDialog.dismiss();
 		}
 	}
+	
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+    	case R.id.main_menu_playlist:
+    		Intent i = new Intent(this, PlaylistActivity.class);
+    		startActivity(i);
+    		return true;
+    	default:
+    		return false;
+    	}
+    }
+    
+
 }

@@ -2,15 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-<SeekBar 
-    android:id="@+id/mainVolumeControl" android:layout_height="wrap_content" android:layout_width="fill_parent" android:max="255" android:progress="128"></SeekBar>
-    <TextView android:id="@+id/mainNowPlaying" android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="center" android:text=""></TextView>
-    <LinearLayout android:id="@+id/linearLayout1" android:layout_width="fill_parent" android:layout_height="wrap_content">
-        <Button android:text="&lt;" android:id="@+id/mainPreviousButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
-        <Button android:text="Pl" android:id="@+id/mainPlayButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
-        <Button android:text="Pa" android:id="@+id/mainPauseButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
-        <Button android:text="St" android:id="@+id/mainStopButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
-        <Button android:text="&gt;" android:id="@+id/mainNextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1"></Button>
+    android:layout_height="fill_parent"
+    android:gravity="center|center_vertical|center_horizontal"
+    android:padding="10dp">
+    <TextView android:text="@string/playback_control" android:layout_height="wrap_content" android:layout_width="fill_parent" />
+    <LinearLayout android:id="@+id/linearLayout1" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:layout_marginBottom="10dp">
+        <ImageButton android:src="@android:drawable/ic_media_previous" android:id="@+id/mainPreviousButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+        <ImageButton android:src="@android:drawable/ic_media_play" android:text="Pl" android:id="@+id/mainPlayButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+        <ImageButton android:src="@android:drawable/ic_media_pause" android:text="Pa" android:id="@+id/mainPauseButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
+        <ImageButton android:src="@android:drawable/ic_media_next" android:text="&gt;" android:id="@+id/mainNextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" />
     </LinearLayout>
+    <TextView android:id="@+id/main_volume_label" android:text="@string/volume_percent" android:layout_height="wrap_content" android:layout_width="fill_parent" />
+	<SeekBar android:id="@+id/mainVolumeControl" android:layout_height="wrap_content" android:layout_width="fill_parent" android:max="255" android:progress="128"></SeekBar>
 </LinearLayout>

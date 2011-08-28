@@ -20,4 +20,9 @@
     <string name="add_server_dialog_enter_name">Please enter a name for the server</string>
     <string name="add_server_dialog_enter_host">Please enter a hostname or an IP address for the server.</string>
     <string name="setting_up_connection">Setting up connection. Please wait...</string>
+    <string name="volume_percent">Volume (%d%%):</string>
+    <string name="playback_control">Playback control:</string>
+    <string name="playlist_title">Current playlist</string>
+    <string name="main_menu_playlist">Show playlist</string>
+    <string name="retrieving_playlist">Retrieving playlist. Please wait...</string>
 </resources>

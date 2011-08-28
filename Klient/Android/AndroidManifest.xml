@@ -23,5 +23,9 @@
         		  android:label="@string/server_config_title"
                   android:configChanges="orientation" />
 
+        <activity android:name=".PlaylistActivity"
+        		  android:label="@string/playlist_title"
+                  android:configChanges="orientation" />
+
     </application>
 </manifest>

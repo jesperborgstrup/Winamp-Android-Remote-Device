@@ -1,4 +1,4 @@
-﻿import socket, sys, time, threading, settings, struct, pickle
+﻿import socket, sys, time, threading, settings, struct, pickle, locale
 from messages import Messages
 
 S = settings.Settings()
@@ -12,6 +12,7 @@ class Server():
 		self.host = host
 		self.backlog = 5
 		self.winamp = winamp
+		self.default_encoding = locale.getdefaultlocale()[1]
 		
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.socket.bind((self.host,self.port))
@@ -72,11 +73,17 @@ class ClientThread( threading.Thread ):
 			self.server.log( "ClientThread main loop 2", 9)
 			if self.parse_function == None:
 				if self.param_index == None:
+					
+					# We send 4-byte integer messages
+					this_message = struct.unpack( ">I", char + self.buffer.consume_one() + self.buffer.consume_one() + self.buffer.consume_one() )[0]
+					
 					for msg in messages:
-						if char == msg[0]:
+						if this_message == msg[0]:
 							self.server.log( "Client sent message %s" % msg, level=7 )
 							self.message = msg
 							self.function, self.param_index, self.params = (msg[1], 2, [])
+					if self.param_index == None:
+						self.server.log( "Client sent UNKNOWN message %s" % this_message, level=3 )
 				else:
 					if len(self.message) <= self.param_index:
 						assert char == chr(0)
@@ -155,51 +162,86 @@ class ClientThread( threading.Thread ):
 		self.server.log(  "Received from %s:%s: set_volume(%d)" % (str(self.host), str(self.port), amount), level=4 )
 		self.server.winamp.setVolume( amount )
 		
+	def play_playlist_item(self, position):
+		self.server.log(  "Received from %s:%s: play_playlist_item(%d)" % (str(self.host), str(self.port), position), level=4 )
+		if self.server.winamp.getPlaybackStatus() == self.server.winamp.PLAYBACK_PLAYING:
+			self.server.winamp.stop()
+		self.server.winamp.setPlaylistPosition( position )
+		self.server.winamp.play()
+		
 	def get_volume(self):
 		self.server.log(  "Received from %s:%s: get_volume()" % (str(self.host), str(self.port) ), level=6 )
 		self.send_volume()
 		
 	def send_volume(self):
-		self.client.send( Messages.GET_VOLUME )
+		self.send_message( Messages.GET_VOLUME )
 		self.client.send( struct.pack(">i", self.server.winamp.getVolume()))
-		self.client.send( Messages.STOP )
+		self.send_message( Messages.STOP )
 		
 	def get_playback_status(self):
 		self.server.log(  "Received from %s:%s: get_playback_status()" % (str(self.host), str(self.port) ), level=6 )
 		self.send_playback_status()
 		
 	def send_playback_status(self):
-		self.client.send( Messages.GET_PLAYBACK_STATUS )
+		self.send_message( Messages.GET_PLAYBACK_STATUS )
 		status = self.server.winamp.getPlaybackStatus()
-		self.server.log( "Sending playback status: %d" % status, level=5 )
+		self.server.log( "Sending playback status: %d" % status, level=7 )
 		self.client.send( struct.pack(">i", self.server.winamp.getPlaybackStatus()))
-		self.client.send( Messages.STOP )
+		self.send_message( Messages.STOP )
 		
 	def get_current_title(self):
 		self.server.log(  "Received from %s:%s: get_current_title()" % (str(self.host), str(self.port) ), level=6 )
 		self.send_current_title()
 		
 	def send_current_title(self):
-		self.client.send( Messages.GET_CURRENT_TITLE )
+		self.send_message( Messages.GET_CURRENT_TITLE )
 		self.send_string( self.server.winamp.getCurrentPlayingTitle() )
-		self.client.send( Messages.STOP )
+		self.server.log(  "Sending current item %s" % self.server.winamp.getCurrentPlayingTitle(), level=6 )
+		self.send_message( Messages.STOP )
+		
+	def get_playlist(self):
+		self.server.log(  "Received from %s:%s: get_playlist()" % (str(self.host), str(self.port) ), level=6 )
+		self.send_playlist()
+		
+	def send_playlist(self):
+		playlist = self.server.winamp.getPlaylistTitles()
+		self.send_message( Messages.GET_PLAYLIST )
+		self.client.send( struct.pack(">I", len( playlist ) ) )
+		for item in playlist:
+			self.server.log( "Sending playlist item: %s" % item, level=10 )
+			self.send_string( item )
+		self.send_message( Messages.STOP )
+		
+	def send_message(self, message):
+		self.client.send( struct.pack( ">I", message ) )
 		
 	def send_string(self, string):
 		encoded = string.encode('utf-8')
 		# First two bytes of a string transmission is the length of the encoded string
 		self.client.send( struct.pack( ">H", len( encoded ) ) )
 		self.client.send( encoded )
+		
+	def print_tom_string(self, string):
+		if isinstance(string, str):
+			print repr( string.decode( self.server.default_encoding ) )
+		elif isinstance(string, unicode):
+			print repr( string )
+		else:
+			print "BLAHHHHH"
 
-messages = [[Messages.PLAY,       ClientThread.play],
-			[Messages.STOP,       ClientThread.stop],
-			[Messages.PAUSE,      ClientThread.pause],
-			[Messages.PREVIOUS,   ClientThread.previous],
-			[Messages.NEXT,       ClientThread.next],
-			[Messages.SET_VOLUME, ClientThread.set_volume,    ClientThread.parse_byte],
+messages = [[Messages.PLAY,       	  	   ClientThread.play],
+			[Messages.STOP,       		   ClientThread.stop],
+			[Messages.PAUSE,      		   ClientThread.pause],
+			[Messages.PREVIOUS,   		   ClientThread.previous],
+			[Messages.NEXT,       		   ClientThread.next],
+			[Messages.SET_VOLUME, 		   ClientThread.set_volume,         ClientThread.parse_byte],
+			[Messages.PLAY_PLAYLIST_ITEM,  ClientThread.play_playlist_item, ClientThread.parse_int],
 			
-			[Messages.GET_VOLUME, ClientThread.get_volume],
+			[Messages.GET_VOLUME, 		   ClientThread.get_volume],
 			[Messages.GET_PLAYBACK_STATUS, ClientThread.get_playback_status],
-			[Messages.GET_CURRENT_TITLE, ClientThread.get_current_title]]
+			[Messages.GET_CURRENT_TITLE,   ClientThread.get_current_title],
+			
+			[Messages.GET_PLAYLIST, ClientThread.get_playlist]]
 
 
 class CommandBuffer:

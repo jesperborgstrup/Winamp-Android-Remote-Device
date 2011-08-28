@@ -12,8 +12,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import dk.borgstrup.ward.client.MessageReader;
-import dk.borgstrup.ward.client.MessageWriter;
 import dk.borgstrup.ward.client.Settings;
 
 import android.os.Bundle;
@@ -49,7 +47,7 @@ public class WardConnection {
 		return this.listeners.remove( listener );
 	}
 	
-	public void postMessageToListeners(byte message, Bundle data) {
+	public void postMessageToListeners(int message, Bundle data) {
 		for (WardConnectionListener l: listeners) {
 			l.receivedMessage(message, data);
 		}
@@ -169,5 +167,20 @@ public class WardConnection {
 	public void requestCurrentTitle() {
 		if (isConnected())
 			mw.requestCurrentTitle();
+	}
+	
+	public void requestPlaylist() {
+		if (isConnected())
+			mw.requestPlaylist();
+	}
+
+	/**
+	 * Playback a specific playlist item 
+	 * @param position 0-indexed playlist item
+	 */
+	public void playPlaylistItem(int position) {
+		if (isConnected()) {
+			mw.playPlaylistItem( position );
+		}
 	}
 }

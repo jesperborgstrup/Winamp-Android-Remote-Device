@@ -4,6 +4,6 @@ import android.os.Bundle;
 
 public interface WardConnectionListener {
 
-	public void receivedMessage(byte message, Bundle data);
+	public void receivedMessage(int message, Bundle data);
 	
 }

@@ -108,30 +108,5 @@ public class ServerAdministrator {
 			Settings.LogW( "ServerAdministrator::writeServers::IOException", e);
 		}
 	}
-	
-	public void createDummyFile() {
-		try {
-			FileOutputStream fos = context.openFileOutput(ServerFile, Context.MODE_PRIVATE);
-			DataOutputStream dos = new DataOutputStream(fos);
-			dos.writeBytes( "Jesper-LAPTOP\r\n" );
-			dos.writeBytes( "Jesper-LAPTOP,192.168.0.20,9273\r\n" );
-			dos.writeBytes( "Jesper-PC,192.168.0.13,9273\r\n" );
-			/*
-			dos.writeBytes( "Localhost2,localhost,9273\r\n" );
-			dos.writeBytes( "Jesper-LAPTOP2,192.168.0.20,9273\r\n" );
-			dos.writeBytes( "Jesper-PC2,192.168.0.13,9273\r\n" );
-			dos.writeBytes( "Localhost3,localhost,9273\r\n" );
-			dos.writeBytes( "Jesper-LAPTOP3,192.168.0.20,9273\r\n" );
-			dos.writeBytes( "Jesper-PC3,192.168.0.13,9273\r\n" );
-			dos.writeBytes( "Localhost4,localhost,9273\r\n" );
-			dos.writeBytes( "Jesper-LAPTOP4,192.168.0.20,9273\r\n" );
-			dos.writeBytes( "Jesper-PC4,192.168.0.13,9273\r\n" );
-			*/
-		} catch (FileNotFoundException e) {
-			Settings.LogW( "ServerAdministrator::createDummyFile::FileNotFoundException", e);
-		} catch (IOException e) {
-			Settings.LogW( "ServerAdministrator::createDummyFile::IOException", e);
-		}
-	}
 
 }

@@ -28,6 +28,7 @@ import win32api, win32con, win32gui, win32process, pywintypes
 import os
 import random
 import time
+import locale
 
 class Winamp(object):
 	# Winamp main window IPC
@@ -187,6 +188,8 @@ class Winamp(object):
 		except pywintypes.error, e:
 			raise RuntimeError("Cannot find Winamp windows. Is winamp started?")
 
+		self.default_encoding = locale.getdefaultlocale()[1]
+
 		self.__processID = win32process.GetWindowThreadProcessId(self.__mainWindowHWND)[1]
 
 		# open Winamp's process
@@ -260,7 +263,15 @@ class Winamp(object):
 		"""
 		windll.kernel32.ReadProcessMemory(self.__hProcess, address, buffer, bufferLength, byref(bytesRead))
 
-		return buffer.value
+		result = buffer.value
+		
+		if isinstance(result, str):
+			return result.decode( self.default_encoding )
+		elif isinstance(result, unicode):
+			return result
+		else:
+			raise Exception( 'String is neither string nor unicode')
+		
 	
 	def enqueueFile(self, filePath):
 		"""Enqueues a file in Winamp's playlist.
