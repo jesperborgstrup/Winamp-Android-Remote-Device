@@ -30,6 +30,9 @@ import random
 import time
 import locale
 
+class WinampNotRunningException(Exception):
+	pass
+
 class Winamp(object):
 	# Winamp main window IPC
 	WM_WA_IPC = win32con.WM_USER
@@ -83,6 +86,8 @@ class Winamp(object):
 
 	# sort playlist by path and filename
 	ID_PE_S_PATH = 40211
+	
+	_Winamp__hProcess = 0
 
 	class COPYDATATYPE(Structure):
 		_fields_ = [("szData", c_char_p)]
@@ -168,7 +173,7 @@ class Winamp(object):
 	  char *query;
 	  int max_results;      // can be 0 for unlimited
 	  itemRecordList results;
-	} mlQueryStruct;
+	} mQueryStruct;
 	"""
 	class mlQueryStruct(Structure):
 		pass
@@ -176,7 +181,29 @@ class Winamp(object):
 	def __init__(self):
 		self.__initStructures()
 
-		# get important Winamp's window handles
+		self.default_encoding = locale.getdefaultlocale()[1]
+		
+	def __ensure_winamp_running(self):
+		if not self.__is_connected_to_winamp():
+			self.__connect_to_winamp()
+			if not self.__is_connected_to_winamp():
+				raise WinampNotRunningException
+			
+	
+	def __is_connected_to_winamp(self):
+		# No process handle = not connected
+		if (self.__hProcess <= 0):
+			return False
+		i = c_long()
+		# GetExitCodeProcess fails = not connected
+		if (windll.kernel32.GetExitCodeProcess( self.__hProcess, byref(i) ) == 0):
+			return False
+		# Exit code != STILL_ALIVE (259)  = not connected
+		if ( i.value != 259 ):
+			return False
+		return True
+		
+	def __connect_to_winamp(self):
 		try:
 			self.__mainWindowHWND = self.__findWindow([("Winamp v1.x", None)])
 			self.__playlistHWND = self.__findWindow([("BaseWindow_RootWnd", None), 
@@ -187,9 +214,7 @@ class Winamp(object):
 			("Winamp Gen", "Winamp Library"), (None, None)])
 		except pywintypes.error, e:
 			raise RuntimeError("Cannot find Winamp windows. Is winamp started?")
-
-		self.default_encoding = locale.getdefaultlocale()[1]
-
+	
 		self.__processID = win32process.GetWindowThreadProcessId(self.__mainWindowHWND)[1]
 
 		# open Winamp's process
@@ -278,6 +303,8 @@ class Winamp(object):
 
 		filePath is the given file path to enqueue.
 		"""
+		
+		self.__ensure_winamp_running()
 
 		# prepare copydata structure for sending data
 		cpyData = create_string_buffer(filePath)
@@ -297,6 +324,8 @@ class Winamp(object):
 		The query should include filters like '?artist has \'alice\''.
 		For more information, consult your local Winamp forums or media library.
 		"""
+		self.__ensure_winamp_running()
+
 		queryStringAddr = self.__copyDataToWinamp(queryString)
 
 		# create query structs and copy to winamp
@@ -341,6 +370,8 @@ class Winamp(object):
 		else:
 			dataToCopy = data
 
+		self.__ensure_winamp_running()
+
 		# allocate data in Winamp's address space
 		lpAddress = windll.kernel32.VirtualAllocEx(self.__hProcess, None, sizeof(dataToCopy), win32con.MEM_COMMIT, win32con.PAGE_READWRITE)
 		# write data to Winamp's memory
@@ -353,6 +384,8 @@ class Winamp(object):
 			buffer = create_string_buffer(win32con.MAX_PATH)
 		else:
 			buffer = create_string_buffer(sizeof(ctypesType))
+
+		self.__ensure_winamp_running()
 
 		bytesRead = c_ulong(0)
 		if windll.kernel32.ReadProcessMemory(self.__hProcess, address, buffer, sizeof(buffer), byref(bytesRead)) == 0:
@@ -386,6 +419,9 @@ class Winamp(object):
 	
 	def __sendUserMessage(self, wParam, lParam, hwnd = None):
 		"""Sends a user message to the given hwnd with the given wParam and lParam."""
+
+		self.__ensure_winamp_running()
+
 		if hwnd is None:
 			targetHWND = self.__mainWindowHWND
 		else:
@@ -395,6 +431,9 @@ class Winamp(object):
 
 	def __sendCommandMessage(self, wParam, lParam, hwnd = None):
 		"""Sends a command message to the given hwnd with the given wParam and lParam."""
+
+		self.__ensure_winamp_running()
+
 		if hwnd is None:
 			targetHWND = self.__mainWindowHWND
 		else:

@@ -19,6 +19,11 @@ public class Messages {
 	
 	public static final int GET_PLAYLIST = 150;
 	
+	public static final int ERROR = 200;
+
+	public static final int ERROR_WINAMP_NOT_RUNNING = 5;
+	
+	public static final String EXTRA_ERROR = "error";
 	public static final String EXTRA_SERVER_HOST = "server_host";
 	public static final String EXTRA_SERVER_PORT = "server_port";
 	public static final String EXTRA_SERVER_ADMIN = "server_admin";

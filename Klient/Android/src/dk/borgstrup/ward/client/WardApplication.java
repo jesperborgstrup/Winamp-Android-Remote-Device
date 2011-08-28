@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 
 import android.app.Application;
 import android.os.Bundle;
+import android.widget.Toast;
 import dk.borgstrup.ward.client.connection.Messages;
 import dk.borgstrup.ward.client.connection.ServerAdministrator;
 import dk.borgstrup.ward.client.connection.ServerInfo;
@@ -43,9 +44,18 @@ public class WardApplication extends Application implements WardConnectionListen
 
 	@Override
 	public void receivedMessage(int message, Bundle data) {
+		
 		switch (message) {
 		case Messages.GET_PLAYLIST:
 			playlist = new Playlist( data.getStringArray(Messages.EXTRA_PLAYLIST_ITEMS) );
+			break;
+		case Messages.ERROR:
+			int error = data.getInt( Messages.EXTRA_ERROR );
+			switch (error) {
+			case Messages.ERROR_WINAMP_NOT_RUNNING:
+//				Toast.makeText(this, R.string.winamp_not_running, Toast.LENGTH_LONG).show();
+				break;
+			}
 			break;
 		}
 	}

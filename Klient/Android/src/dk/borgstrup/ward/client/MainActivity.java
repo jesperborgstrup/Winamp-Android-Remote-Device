@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import dk.borgstrup.ward.client.connection.Messages;
@@ -182,6 +183,15 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				case Messages.GET_CURRENT_TITLE:
 					String title = data.getString( Messages.EXTRA_CURRENT_TITLE );
 					MainActivity.this.setTitle( title );
+					break;
+				case Messages.ERROR:
+					int error = data.getInt( Messages.EXTRA_ERROR );
+					switch (error) {
+					case Messages.ERROR_WINAMP_NOT_RUNNING:
+						Toast.makeText(MainActivity.this, R.string.winamp_not_running, Toast.LENGTH_LONG).show();
+//						finish();
+						break;
+					}
 					break;
 				}
 			}

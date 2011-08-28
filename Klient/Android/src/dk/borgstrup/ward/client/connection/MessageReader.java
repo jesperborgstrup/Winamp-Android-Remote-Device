@@ -41,6 +41,9 @@ public class MessageReader extends Thread {
 					case Messages.GET_PLAYLIST:
 						tryParseGetPlaylist();
 						break;
+					case Messages.ERROR:
+						tryParseError();
+						break;
 					}
 					message = null;
 				}
@@ -88,6 +91,16 @@ public class MessageReader extends Thread {
 		data.putStringArray( Messages.EXTRA_PLAYLIST_ITEMS, playlist );
 		conn.postMessageToListeners( Messages.GET_PLAYLIST, data );
 	}
+	
+	private void tryParseError() throws IOException {
+		Settings.LogI("tryparseError()");
+		Bundle data = new Bundle(1);
+		int error = stream.readInt();
+		data.putInt( Messages.EXTRA_ERROR, error );
+		conn.postMessageToListeners( Messages.ERROR, data );
+	}
+
+
 
 	private String readString() throws IOException {
 		return stream.readUTF();

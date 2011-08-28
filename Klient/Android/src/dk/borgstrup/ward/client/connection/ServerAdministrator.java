@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.content.Context;
-import android.widget.Toast;
 import dk.borgstrup.ward.client.Settings;
 
 public class ServerAdministrator {
@@ -68,20 +67,16 @@ public class ServerAdministrator {
 		String latest;
 		ServerInfo server;
 		ServerConfiguration result = new ServerConfiguration();
-		String s = "";
 		try {
 			latest = dis.readLine();
-			s += "Latest: " + latest + "\r\n";
 			while (null != (line = dis.readLine())) {
 				entries = line.split(",");
 				server = new ServerInfo(entries[0], entries[1], Integer.valueOf(entries[2]).intValue());
 				result.addServer(server);
-				s+=entries[0] + "\r\n";
 				if (!latest.equals("") && server.getName().equals(latest))
 					result.setLatest(server);
 			}
 			dis.close();
-			Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			Settings.LogW( "ServerAdministrator::readServers::IOException", e);
 		}

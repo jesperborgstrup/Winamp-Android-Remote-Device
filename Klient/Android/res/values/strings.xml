@@ -25,4 +25,5 @@
     <string name="playlist_title">Current playlist</string>
     <string name="main_menu_playlist">Show playlist</string>
     <string name="retrieving_playlist">Retrieving playlist. Please wait...</string>
+    <string name="winamp_not_running">Winamp is not running on the server!</string>
 </resources>

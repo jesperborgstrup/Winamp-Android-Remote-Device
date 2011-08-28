@@ -79,5 +79,6 @@ public final class R {
         public static final int start_select_server=0x7f040004;
         public static final int start_title=0x7f040003;
         public static final int volume_percent=0x7f040014;
+        public static final int winamp_not_running=0x7f040019;
     }
 }

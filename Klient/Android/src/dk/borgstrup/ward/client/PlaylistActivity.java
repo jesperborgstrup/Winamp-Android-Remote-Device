@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 import dk.borgstrup.ward.client.connection.Messages;
 import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
@@ -99,6 +98,14 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 		        	initializeListView();
 					if (setupDialog.isShowing())
 						setupDialog.dismiss();
+					break;
+				case Messages.ERROR:
+					int error = data.getInt( Messages.EXTRA_ERROR );
+					switch (error) {
+					case Messages.ERROR_WINAMP_NOT_RUNNING:
+//						finish();
+						break;
+					}
 					break;
 				}
 			}
