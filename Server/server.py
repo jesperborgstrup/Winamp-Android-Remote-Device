@@ -4,10 +4,11 @@ from messages import Messages
 S = settings.Settings()
 
 
-class Server():
+class Server(threading.Thread):
 	threads = []
 	
 	def __init__(self, host, port, winamp):
+		threading.Thread.__init__(self)
 		self.port = port
 		self.host = host
 		self.backlog = 5
@@ -15,6 +16,7 @@ class Server():
 		self.default_encoding = locale.getdefaultlocale()[1]
 		
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind((self.host,self.port))
 
 	def run(self):
@@ -55,6 +57,7 @@ class ClientThread( threading.Thread ):
 
 		try:
 			self.server.winamp._Winamp__ensure_winamp_running()
+			self.send_info( Messages.INFO_CONNECTED_EVERYTHING_OK )
 		except winamp.WinampNotRunningException:
 			self.server.log( "Winamp not running..!", level=4 )
 			self.send_error( Messages.ERROR_WINAMP_NOT_RUNNING )
@@ -144,6 +147,11 @@ class ClientThread( threading.Thread ):
 	def send_error(self, error):
 		self.send_message( Messages.ERROR )
 		self.send_message( error )
+		self.send_message( Messages.STOP )
+			
+	def send_info(self, info ):
+		self.send_message( Messages.INFO )
+		self.send_message( info )
 		self.send_message( Messages.STOP )
 			
 	def play(self):

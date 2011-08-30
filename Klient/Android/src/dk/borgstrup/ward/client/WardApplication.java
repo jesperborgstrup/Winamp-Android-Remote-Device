@@ -25,8 +25,15 @@ public class WardApplication extends Application implements WardConnectionListen
 		serverAdmin = new ServerAdministrator(this);
 	}
 	
-	public boolean connectTo( ServerInfo server ) {
+	/**
+	 * Connect to a server and immediately add a listener to the connection
+	 * @param server
+	 * @param listener A listener if needed, else null
+	 * @return
+	 */
+	public boolean connectTo( ServerInfo server, WardConnectionListener listener ) {
 		conn = new WardConnection(server.getHost(), server.getPort());
+		conn.addListener(listener);
 		conn.addListener(this);
 		this.server = server;
 		try {
@@ -41,6 +48,10 @@ public class WardApplication extends Application implements WardConnectionListen
 		}
 		return false;
 	}
+	
+	public boolean connectTo( ServerInfo server ) {
+		return connectTo( server, null );
+	}
 
 	@Override
 	public void receivedMessage(int message, Bundle data) {
@@ -48,14 +59,6 @@ public class WardApplication extends Application implements WardConnectionListen
 		switch (message) {
 		case Messages.GET_PLAYLIST:
 			playlist = new Playlist( data.getStringArray(Messages.EXTRA_PLAYLIST_ITEMS) );
-			break;
-		case Messages.ERROR:
-			int error = data.getInt( Messages.EXTRA_ERROR );
-			switch (error) {
-			case Messages.ERROR_WINAMP_NOT_RUNNING:
-//				Toast.makeText(this, R.string.winamp_not_running, Toast.LENGTH_LONG).show();
-				break;
-			}
 			break;
 		}
 	}

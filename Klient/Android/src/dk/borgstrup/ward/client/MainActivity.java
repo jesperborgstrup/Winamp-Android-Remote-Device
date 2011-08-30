@@ -76,9 +76,15 @@ public class MainActivity extends Activity implements WardConnectionListener {
     public void onStart() {
     	super.onStart();
     	messageCounter = 0;
-    	updateUI();
-    	
+
     	setupDialog.show();
+    	
+    	if (app.conn.getLastError() != -1) {
+    		finish();
+    	} else if (app.conn.getLastInfo() == Messages.INFO_CONNECTED_EVERYTHING_OK) {
+    		updateUI();
+    	}
+    	
     }
   
 	@Override
@@ -184,12 +190,22 @@ public class MainActivity extends Activity implements WardConnectionListener {
 					String title = data.getString( Messages.EXTRA_CURRENT_TITLE );
 					MainActivity.this.setTitle( title );
 					break;
+					/*
 				case Messages.ERROR:
 					int error = data.getInt( Messages.EXTRA_ERROR );
 					switch (error) {
 					case Messages.ERROR_WINAMP_NOT_RUNNING:
 						Toast.makeText(MainActivity.this, R.string.winamp_not_running, Toast.LENGTH_LONG).show();
-//						finish();
+						finish();
+						break;
+					}
+					break;
+					*/
+				case Messages.INFO:
+					int info = data.getInt( Messages.EXTRA_INFO );
+					switch (info) {
+					case Messages.INFO_CONNECTED_EVERYTHING_OK:
+						updateUI();
 						break;
 					}
 					break;

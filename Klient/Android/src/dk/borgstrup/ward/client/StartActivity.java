@@ -12,10 +12,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
+import dk.borgstrup.ward.client.connection.Messages;
 import dk.borgstrup.ward.client.connection.ServerConfiguration;
 import dk.borgstrup.ward.client.connection.ServerInfo;
+import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
-public class StartActivity extends Activity {
+public class StartActivity extends Activity implements WardConnectionListener {
 	
 	private Button latestButton;
 	private Button selectButton;
@@ -106,7 +108,7 @@ public class StartActivity extends Activity {
 	}
     
     public void connectTo(ServerInfo server) {
-    	if (app.connectTo(server)) {
+    	if (app.connectTo(server, this)) {
     		app.serverAdmin.getConfiguration().setLatest(server);
     		Intent i = new Intent(this, MainActivity.class);
     		startActivity(i);
@@ -114,5 +116,27 @@ public class StartActivity extends Activity {
     		Toast.makeText(this, res.getString(R.string.could_not_connect, server.getHost()), Toast.LENGTH_LONG).show();
     	}
     }
+    
+	@Override
+	public void receivedMessage(final int message, final Bundle data) {
+		runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				switch (message) {
+				case Messages.ERROR:
+					int error = data.getInt( Messages.EXTRA_ERROR );
+					switch (error) {
+					case Messages.ERROR_WINAMP_NOT_RUNNING:
+						Toast.makeText(StartActivity.this, R.string.winamp_not_running, Toast.LENGTH_SHORT).show();
+						break;
+					}
+					break;
+				}
+			}
+		});
+		
+	}
+
     
 }

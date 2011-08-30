@@ -44,6 +44,9 @@ public class MessageReader extends Thread {
 					case Messages.ERROR:
 						tryParseError();
 						break;
+					case Messages.INFO:
+						tryParseInfo();
+						break;
 					}
 					message = null;
 				}
@@ -98,6 +101,16 @@ public class MessageReader extends Thread {
 		int error = stream.readInt();
 		data.putInt( Messages.EXTRA_ERROR, error );
 		conn.postMessageToListeners( Messages.ERROR, data );
+		conn.lastError = error;
+	}
+
+	private void tryParseInfo() throws IOException {
+		Settings.LogI("tryparseInfo()");
+		Bundle data = new Bundle(1);
+		int info = stream.readInt();
+		data.putInt( Messages.EXTRA_INFO, info );
+		conn.postMessageToListeners( Messages.INFO, data );
+		conn.lastInfo = info;
 	}
 
 

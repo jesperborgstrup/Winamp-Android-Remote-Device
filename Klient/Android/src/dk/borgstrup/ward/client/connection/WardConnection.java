@@ -29,6 +29,9 @@ public class WardConnection {
 	
 	private List<WardConnectionListener> listeners;
 	
+	protected int lastError = -1;
+	protected int lastInfo = -1;
+	
 	public WardConnection(String host, int port )
 	{
 	    this.host = host;
@@ -37,7 +40,7 @@ public class WardConnection {
 	}
 	
 	public void addListener(WardConnectionListener listener) {
-		if (this.listeners.contains( listener ) )
+		if (listener == null || this.listeners.contains( listener ))
 			return;
 		
 		this.listeners.add( listener );
@@ -182,5 +185,13 @@ public class WardConnection {
 		if (isConnected()) {
 			mw.playPlaylistItem( position );
 		}
+	}
+	
+	public int getLastError() {
+		return this.lastError;
+	}
+	
+	public int getLastInfo() {
+		return this.lastInfo;
 	}
 }

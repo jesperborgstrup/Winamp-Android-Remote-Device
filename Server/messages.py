@@ -23,3 +23,7 @@ class Messages:
 	ERROR = 200
 	
 	ERROR_WINAMP_NOT_RUNNING = 5
+	
+	INFO =  300
+	
+	INFO_CONNECTED_EVERYTHING_OK       = 10

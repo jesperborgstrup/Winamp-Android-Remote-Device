@@ -23,7 +23,12 @@ public class Messages {
 
 	public static final int ERROR_WINAMP_NOT_RUNNING = 5;
 	
+	public static final int INFO =  300;
+	
+	public static final int INFO_CONNECTED_EVERYTHING_OK = 10;
+	
 	public static final String EXTRA_ERROR = "error";
+	public static final String EXTRA_INFO = "info";
 	public static final String EXTRA_SERVER_HOST = "server_host";
 	public static final String EXTRA_SERVER_PORT = "server_port";
 	public static final String EXTRA_SERVER_ADMIN = "server_admin";
