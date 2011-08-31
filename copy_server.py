@@ -2,7 +2,7 @@ import distutils.dir_util, os.path
 
 if __name__ == "__main__":
 	srcdir = os.path.abspath("Server")
-	destdir = "Z:\\ward"
+	destdir = r"\\Jesper-PC\Ward Server"
 	
 	print
 	print "Copying ward server from"

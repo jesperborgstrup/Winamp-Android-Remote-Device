@@ -13,6 +13,9 @@ class Server(threading.Thread):
 		self.host = host
 		self.backlog = 5
 		self.winamp = winamp
+		self.winamp_watcher = WinampWatcher(self, winamp)
+		self.winamp_watcher.start()
+		
 		self.default_encoding = locale.getdefaultlocale()[1]
 		
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,13 +33,16 @@ class Server(threading.Thread):
 			thread.start()
 		
 	def log(self, msg, level=5):
-		if level <= S.LOG_LEVEL:
+		if level <= S.LOG_PRINT_LEVEL:
 			print msg
 	
-
 	def stop(self):
+		self.winamp_watcher.stop()
 		self.socket.close()
 		
+	def call_on_all_clients(self, function):
+		for thread in self.threads:
+			function(thread)
 		
 class ClientThread( threading.Thread ):
 	data = ""
@@ -311,3 +317,52 @@ class BufferFiller( threading.Thread ):
 	def kill(self):
 		self._kill = True
 
+class WinampWatcher(threading.Thread):
+	
+	val_volume = -1
+	val_current_track = ""
+	connected = False
+	stop_thread = False
+	
+	def __init__(self, server, winamp_object):
+		threading.Thread.__init__(self)
+		self.server = server
+		self.winamp = winamp_object
+		
+		if self.__ensure_connected():
+			self.val_volume = self.winamp.getVolume()
+			self.val_current_track = self.winamp.getCurrentPlayingTitle()
+		
+	def run(self):
+		while not self.stop_thread:
+			time.sleep( 1 )
+			
+			if not self.__ensure_connected():
+				continue
+			
+			#Volume
+			volume = self.winamp.getVolume()
+			if volume != self.val_volume:
+				self.server.log("Volume changed (from %d to %d)" % (self.val_volume, volume), level=8)
+				self.val_volume = volume
+				self.server.call_on_all_clients(ClientThread.send_volume)
+				
+			track = self.winamp.getCurrentPlayingTitle()
+			if track != self.val_current_track:
+				self.server.log("Track changed to %s" % (track), level=7)
+				self.val_current_track = self.winamp.getCurrentPlayingTitle()
+				self.server.call_on_all_clients(ClientThread.send_current_title)
+
+
+			
+	def __ensure_connected(self):
+		try:
+			self.winamp._Winamp__ensure_winamp_running()
+			self.connected = True
+		except winamp.WinampNotRunningException:
+			self.connected = False
+			
+		return self.connected
+		
+	def stop(self):
+		self.stop_thread = True

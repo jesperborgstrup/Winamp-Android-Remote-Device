@@ -3,6 +3,7 @@ Winamp Android Remote Device
 Control your Winamp on your Windows PC using your Android phone.
 
 The software consists of two parts:
+
 * A Python server interacting with Winamp
 * An Android client connecting to the Python server
 

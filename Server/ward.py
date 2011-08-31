@@ -1,13 +1,19 @@
-import sys, os, time, settings, glob, threading, winamp, server
+import sys, os, time, settings, glob, threading, winamp, server, traceback
 
-S = settings.Settings()
+def reload_modules():
+	S = settings.Settings()
+	S.log( "Reloading modules...", level=3 )
+	for (name, module) in sys.modules.items():
+		if str(module).startswith('<module') and name not in ['__main__']:
+			reload(module)
+			
+	S = settings.Settings()
+	S.log( "Done reloading modules.", level=3 )
 
-def log(msg, level=5):
-	if level <= S.LOG_LEVEL:
-		print msg
-		
+
 class ChangeMonitor(threading.Thread):
 	
+	S = settings.Settings()
 	ward_server = None
 	
 	def __init__(self):
@@ -52,26 +58,27 @@ class ChangeMonitor(threading.Thread):
 		return change
 	
 	def start_server(self):
-		reload(winamp)
-		winamp_class = winamp.Winamp()
-		
-		reload(server)
-		
-		if self.ward_server != None:
-			self.ward_server.stop()
+		try:
+			if self.ward_server != None:
+				self.ward_server.stop()
+				reload_modules()
+				
+			self.S = settings.Settings()
 			
-		log("Initiating server socket on %s:%d..." % (hostname, port), 3 )
-		self.ward_server = server.Server(hostname, port, winamp_class)
-		log("Starting server...", 2)
-		self.ward_server.start()
-	
+			winamp_class = winamp.Winamp()
 		
+			
+			self.S.log("Initiating server socket on %s:%d..." % (self.S.hostname, self.S.port), 3 )
+			self.ward_server = server.Server(self.S.hostname, self.S.port, winamp_class)
+			self.S.log("Starting server...", 2)
+			self.ward_server.start()
+		except Exception as e:
+			print "=== AN EXCEPTION OCCURED ==="
+			traceback.print_exc()
+	
 		
 
 if __name__ == "__main__":
 
-	hostname = S.hostname
-	port = S.port
-	
 	monitor = ChangeMonitor()
 	monitor.start()
