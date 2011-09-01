@@ -50,7 +50,11 @@ public class ServerInfoAdapter extends BaseAdapter {
 			TextView title = (TextView)v.findViewById(R.id.server_row_title);
 			TextView description = (TextView)v.findViewById(R.id.server_row_description);
 			title.setText( server.getName() );
-			description.setText( server.getHost() );
+			if ( server.getMac() == null ) {
+				description.setText( server.getHost() );
+			} else {
+				description.setText( server.getHost() + " (MAC: "+server.getMac()+")" );
+			}
 		}
 		
 		return v;

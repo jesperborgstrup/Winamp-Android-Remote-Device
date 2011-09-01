@@ -6,6 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 import android.content.Context;
 import dk.borgstrup.ward.client.Settings;
@@ -48,6 +51,66 @@ public class ServerAdministrator {
 		writeConfiguration();
 	}
 	
+	public void wakeServer(ServerInfo server) {
+		Settings.LogI("Wake server");
+		
+        String ipStr = "192.168.0.255";
+        String macStr = server.getMac();
+        if (macStr == null) {
+        	return;
+        }
+        
+        try {
+            byte[] macBytes = getMacBytes(macStr);
+            byte[] bytes = new byte[6 + 16 * macBytes.length];
+            for (int i = 0; i < 6; i++) {
+                bytes[i] = (byte) 0xff;
+            }
+            for (int i = 6; i < bytes.length; i += macBytes.length) {
+                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
+            }
+            
+            InetAddress address = InetAddress.getByName(ipStr);
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, 9);
+            DatagramSocket socket = new DatagramSocket();
+            socket.send(packet);
+            socket.close();
+            
+            Settings.LogI("Wake-on-LAN packet sent.");
+        }
+        catch (Exception e) {
+            Settings.LogW("Failed to send Wake-on-LAN packet", e);
+        }
+	}
+        
+	/**
+	 * 
+	 * @param macStr enter like this: 00AE56F332BE
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+    private static byte[] getMacBytes(String macStr) throws IllegalArgumentException {
+        byte[] bytes = new byte[6];
+        if (macStr.length() != 12) {
+            throw new IllegalArgumentException("Invalid MAC address.");
+        }
+        try {
+        	String hex;
+            for (int i = 0; i < 6; i++) {
+            	hex = macStr.substring(i*2, i*2+2);
+            	Settings.LogI( "MAC part " + (1+i)+": " + hex);
+                bytes[i] = (byte) Integer.parseInt(hex, 16);
+            }
+        }
+        catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid hex digit in MAC address.");
+        }
+        return bytes;
+    }
+    
+
+	
+	
 	private ServerConfiguration readConfiguration() {
 		FileInputStream fis;
 		try {
@@ -71,7 +134,11 @@ public class ServerAdministrator {
 			latest = dis.readLine();
 			while (null != (line = dis.readLine())) {
 				entries = line.split(",");
-				server = new ServerInfo(entries[0], entries[1], Integer.valueOf(entries[2]).intValue());
+				String mac = null;
+				if (entries.length > 3) {
+					mac = entries[3];
+				}
+				server = new ServerInfo(entries[0], entries[1], Integer.valueOf(entries[2]).intValue(), mac);
 				result.addServer(server);
 				if (!latest.equals("") && server.getName().equals(latest))
 					result.setLatest(server);
@@ -93,8 +160,14 @@ public class ServerAdministrator {
 			} else {
 				dos.writeBytes(config.getLatest().getName()+"\r\n");
 			}
+			String macText = "";
 			for (ServerInfo server: config.getServers()) {
-				dos.writeBytes( server.getName()+","+server.getHost()+","+server.getPort()+"\r\n" );
+				if (server.getMac() != null )
+					macText = server.getMac();
+				else if (server.getMac().equals( "null" ))
+					macText = "";
+				
+				dos.writeBytes( server.getName()+","+server.getHost()+","+server.getPort()+","+macText+"\r\n" );
 			}
 			dos.close();
 		} catch (FileNotFoundException e) {

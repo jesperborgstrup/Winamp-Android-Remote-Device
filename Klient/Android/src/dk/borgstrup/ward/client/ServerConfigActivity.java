@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import dk.borgstrup.ward.client.connection.ServerInfo;
+import java.util.regex.*;
 
 public class ServerConfigActivity extends Activity {
 	
@@ -51,8 +52,9 @@ public class ServerConfigActivity extends Activity {
 		final ServerInfo server = (ServerInfo)adapter.getItem(position);
 		final AlertDialog.Builder builder = new AlertDialog.Builder(ServerConfigActivity.this);
 		builder.setTitle( server.getName() );
-		
-		final String[] options = { res.getString( R.string.server_config_remove ) };
+
+		final String[] options = { res.getString( R.string.server_config_remove ),
+				                   res.getString( R.string.server_config_wake ) };
 
 		builder.setItems(options, new DialogInterface.OnClickListener() {
 			@Override
@@ -61,6 +63,10 @@ public class ServerConfigActivity extends Activity {
 				case 0: // REMOVE
 					app.serverAdmin.removeServer(server);
 					adapter.notifyDataSetChanged();
+					break;
+				case 1: // WAKE
+					app.serverAdmin.wakeServer(server);
+					break;
 				}
 			}
 		});
@@ -123,6 +129,7 @@ public class ServerConfigActivity extends Activity {
     	final EditText textName = (EditText)dialog.findViewById(R.id.add_server_dialog_name);
     	final EditText textHost = (EditText)dialog.findViewById(R.id.add_server_dialog_host);
     	final EditText textPort = (EditText)dialog.findViewById(R.id.add_server_dialog_port);
+    	final EditText textMac  = (EditText)dialog.findViewById(R.id.add_server_dialog_mac);
     	
     	addButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -130,6 +137,8 @@ public class ServerConfigActivity extends Activity {
 				String name = textName.getText().toString();
 				String host = textHost.getText().toString();
 				String portText = textPort.getText().toString();
+				String macText = textMac.getText().toString();
+				String mac = null;
 				int port = -1;
 				
 				try {
@@ -152,12 +161,24 @@ public class ServerConfigActivity extends Activity {
 					return;
 				}
 				
+				if ( !macText.trim().equals( "" ) ) {
+					Pattern p = Pattern.compile( "^([0-9a-fA-F]{2})[-:\\s]?([0-9a-fA-F]{2})[-:\\s]?([0-9a-fA-F]{2})[-:\\s]?([0-9a-fA-F]{2})[-:\\s]?([0-9a-fA-F]{2})[-:\\s]?([0-9a-fA-F]{2})$" );
+					Matcher m = p.matcher( macText );
+					if ( m.find() ) {
+						mac = m.group(1) + m.group(2) + m.group(3) + m.group(4) + m.group(5) + m.group(6);
+						mac = mac.toUpperCase();
+					} else {
+						Toast.makeText(ServerConfigActivity.this, R.string.add_server_dialog_invalid_mac, Toast.LENGTH_LONG).show();
+						return;
+					}
+				}
+				
 				if (app.serverAdmin.getConfiguration().nameExists(name)) {
 					Toast.makeText(ServerConfigActivity.this, R.string.add_server_dialog_name_exists, Toast.LENGTH_LONG).show();
 					return;
 				}
 				
-				ServerInfo server = new ServerInfo(name, host, port);
+				ServerInfo server = new ServerInfo(name, host, port, mac);
 				app.serverAdmin.addServer(server);
 				adapter.notifyDataSetChanged();
 				dialog.dismiss();

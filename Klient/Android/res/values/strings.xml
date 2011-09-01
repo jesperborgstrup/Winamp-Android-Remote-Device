@@ -27,4 +27,7 @@
     <string name="retrieving_playlist">Retrieving playlist. Please wait...</string>
     <string name="winamp_not_running">Winamp is not running on the server!</string>
     <string name="playlist_refresh">Refresh</string>
+    <string name="add_server_dialog_mac">MAC Address (optional):</string>
+    <string name="add_server_dialog_invalid_mac">Invalid MAC address. Write as 00:00:00:00:00:00</string>
+    <string name="server_config_wake">Wake up</string>
 </resources>

@@ -4,10 +4,12 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent" android:orientation="vertical" android:padding="10dp">
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_name"></TextView>
-    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="" android:id="@+id/add_server_dialog_name"></EditText>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/add_server_dialog_name" android:text="PC"></EditText>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_host"></TextView>
-    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="" android:id="@+id/add_server_dialog_host" android:inputType="textNoSuggestions"></EditText>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/add_server_dialog_host" android:inputType="textNoSuggestions" android:text="192.168.0.13"></EditText>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_port"></TextView>
     <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:text="9273" android:id="@+id/add_server_dialog_port" android:inputType="number"></EditText>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/add_server_dialog_mac"></TextView>
+    <EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/add_server_dialog_mac" android:inputType="textNoSuggestions" android:text="00-1A-A0-8E-1E-36"></EditText>
     <Button android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/add_server_dialog_add" android:text="@string/server_config_add"></Button>
 </LinearLayout>
