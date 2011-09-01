@@ -48,7 +48,7 @@ class ChangeMonitor(threading.Thread):
 	
 	def start_server(self):
 		try:
-			if self.server_process != None:
+			if self.server_process != None and self.server_process.poll() is None:
 				self.server_process.kill()
 				self.server_process.wait()
 				

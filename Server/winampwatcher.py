@@ -4,6 +4,7 @@ class WinampWatcher(threading.Thread):
 	
 	val_volume = -1
 	val_current_track = ""
+	val_playback_status = -1
 	connected = False
 	stop_thread = False
 	
@@ -15,6 +16,7 @@ class WinampWatcher(threading.Thread):
 		if self.__ensure_connected():
 			self.val_volume = self.winamp.getVolume()
 			self.val_current_track = self.winamp.getCurrentPlayingTitle()
+			self.val_playback_status = self.winamp.getPlaybackStatus()
 		
 	def run(self):
 		while not self.stop_thread:
@@ -35,6 +37,12 @@ class WinampWatcher(threading.Thread):
 				self.server.S.log("Track changed to %s" % (track), level=7)
 				self.val_current_track = self.winamp.getCurrentPlayingTitle()
 				self.server.call_on_all_clients(server.ClientThread.send_current_title)
+			
+			playback_status = self.winamp.getPlaybackStatus()
+			if playback_status != self.val_playback_status:
+				self.server.S.log("Playback status changed %s" % (playback_status), level=7)
+				self.val_playback_status = playback_status
+				self.server.call_on_all_clients(server.ClientThread.send_playback_status)
 			
 	def __ensure_connected(self):
 		try:
