@@ -37,7 +37,15 @@ class Server(threading.Thread):
 		self.winamp_watcher.stop()
 		self.socket.close()
 		
+	def check_threads(self):
+		before_count = len( self.threads )
+		self.threads = [t for t in self.threads if not t.closed]
+		after_count  = len( self.threads )
+		if (before_count != after_count):
+			self.S.log( "check_threads() removed %d threads from pool" % (before_count-after_count), level=5 )
+		
 	def call_on_all_clients(self, function):
+		self.check_threads()
 		for thread in self.threads:
 			function(thread)
 		
@@ -48,6 +56,7 @@ class ClientThread( threading.Thread ):
 	message = None
 	params = None
 	param_index = None
+	closed = False
 	
 	def __init__(self, server, client, address):
 		threading.Thread.__init__(self)
@@ -55,7 +64,7 @@ class ClientThread( threading.Thread ):
 		self.client = client
 		self.host,self.port = address
 		self.buffer = CommandBuffer()
-		self.filler = BufferFiller(server, client, address, self.buffer)
+		self.filler = BufferFiller(self)
 		self.server.S.log( "ClientThread initiated", 13 )
 
 		try:
@@ -240,6 +249,16 @@ class ClientThread( threading.Thread ):
 			self.send_string( item )
 		self.send_message( Messages.STOP )
 		
+	def get_playlist_position(self):
+		self.server.S.log(  "Received from %s:%s: get_playlist_position()" % (str(self.host), str(self.port) ), level=7 )
+		self.send_playlist_position()
+		
+	def send_playlist_position(self):
+		position = self.server.winamp.getPlaylistPosition()
+		self.send_message( Messages.GET_PLAYLIST_POSITION )
+		self.client.send( struct.pack(">I", position ) )
+		self.send_message( Messages.STOP )
+		
 	def send_message(self, message):
 		self.client.send( struct.pack( ">I", message ) )
 		
@@ -249,19 +268,20 @@ class ClientThread( threading.Thread ):
 		self.client.send( struct.pack( ">H", len( encoded ) ) )
 		self.client.send( encoded )
 		
-messages = [[Messages.PLAY,       	  	   ClientThread.play],
-			[Messages.STOP,       		   ClientThread.stop],
-			[Messages.PAUSE,      		   ClientThread.pause],
-			[Messages.PREVIOUS,   		   ClientThread.previous],
-			[Messages.NEXT,       		   ClientThread.next],
-			[Messages.SET_VOLUME, 		   ClientThread.set_volume,         ClientThread.parse_byte],
-			[Messages.PLAY_PLAYLIST_ITEM,  ClientThread.play_playlist_item, ClientThread.parse_int],
+messages = [[Messages.PLAY,       	  	     ClientThread.play],
+			[Messages.STOP,       		     ClientThread.stop],
+			[Messages.PAUSE,      		     ClientThread.pause],
+			[Messages.PREVIOUS,   		     ClientThread.previous],
+			[Messages.NEXT,        		     ClientThread.next],
+			[Messages.SET_VOLUME, 		     ClientThread.set_volume,         ClientThread.parse_byte],
+			[Messages.PLAY_PLAYLIST_ITEM,    ClientThread.play_playlist_item, ClientThread.parse_int],
 			
-			[Messages.GET_VOLUME, 		   ClientThread.get_volume],
-			[Messages.GET_PLAYBACK_STATUS, ClientThread.get_playback_status],
-			[Messages.GET_CURRENT_TITLE,   ClientThread.get_current_title],
+			[Messages.GET_VOLUME, 		     ClientThread.get_volume],
+			[Messages.GET_PLAYBACK_STATUS,   ClientThread.get_playback_status],
+			[Messages.GET_CURRENT_TITLE,     ClientThread.get_current_title],
 			
-			[Messages.GET_PLAYLIST, ClientThread.get_playlist]]
+			[Messages.GET_PLAYLIST,          ClientThread.get_playlist],
+			[Messages.GET_PLAYLIST_POSITION, ClientThread.get_playlist_position]]
 
 
 class CommandBuffer:
@@ -281,12 +301,11 @@ class CommandBuffer:
 # da der ellers gik pakker tabt i kommunikationen (fordi vi læste én byte ad gangen fra socket'en)
 class BufferFiller( threading.Thread ):
 	
-	def __init__(self, server, client, address, buffer):
+	def __init__(self, client):
 		threading.Thread.__init__(self)
-		self.server = server
-		self.client = client
-		self.buffer = buffer
-		self.host,self.port = address
+		self.clientthread = client
+		self.client = self.clientthread.client
+		self.buffer = client.buffer
 		self._kill = False
 		
 	def run(self):
@@ -300,6 +319,7 @@ class BufferFiller( threading.Thread ):
 			# Hvis vi får en tom streng tilbage,
 			# er forbindelsen lukket
 			if buf == '':
+				self.clientthread.closed = True
 				self._kill = True
 			self.buffer.cond.acquire()
 			has_lock = True

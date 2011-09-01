@@ -41,6 +41,9 @@ public class MessageReader extends Thread {
 					case Messages.GET_PLAYLIST:
 						tryParseGetPlaylist();
 						break;
+					case Messages.GET_PLAYLIST_POSITION:
+						tryParseGetPlaylistPosition();
+						break;
 					case Messages.ERROR:
 						tryParseError();
 						break;
@@ -95,6 +98,14 @@ public class MessageReader extends Thread {
 		conn.postMessageToListeners( Messages.GET_PLAYLIST, data );
 	}
 	
+	private void tryParseGetPlaylistPosition() throws IOException {
+		Settings.LogI("tryparsegetPlaylistPosition()");
+		Bundle data = new Bundle(1);
+		int position = stream.readInt();
+		data.putInt( Messages.EXTRA_PLAYLIST_POSITON, position );
+		conn.postMessageToListeners( Messages.GET_PLAYLIST_POSITION, data );
+	}
+
 	private void tryParseError() throws IOException {
 		Settings.LogI("tryparseError()");
 		Bundle data = new Bundle(1);

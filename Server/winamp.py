@@ -53,6 +53,8 @@ class Winamp(object):
 	IPC_SETVOLUME = 122
 	# gets list length
 	IPC_GETLISTLENGTH = 124
+	# gets position in playlist
+	IPC_GETPLAYLISTPOS = 125
 	# gets given index playlist file
 	IPC_GETPLAYLISTFILE = 211
 	# gets given index playlist title
@@ -457,6 +459,10 @@ class Winamp(object):
 	def clearPlaylist(self):
 		"""Clears the playlist."""
 		return self.__sendUserMessage(0, self.IPC_DELETE)
+		
+	def getPlaylistPosition(self):
+		"""Gets the playlist position (zero based)"""
+		return self.__sendUserMessage(0, self.IPC_GETPLAYLISTPOS)
 	
 	def setPlaylistPosition(self, position):
 		"""Sets the playlist position in the given position number (zero based)."""

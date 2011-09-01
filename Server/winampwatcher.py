@@ -37,6 +37,7 @@ class WinampWatcher(threading.Thread):
 				self.server.S.log("Track changed to %s" % (track), level=7)
 				self.val_current_track = self.winamp.getCurrentPlayingTitle()
 				self.server.call_on_all_clients(server.ClientThread.send_current_title)
+				self.server.call_on_all_clients(server.ClientThread.send_playlist_position)
 			
 			playback_status = self.winamp.getPlaybackStatus()
 			if playback_status != self.val_playback_status:

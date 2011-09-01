@@ -3,26 +3,24 @@ package dk.borgstrup.ward.client;
 import java.net.UnknownHostException;
 
 import android.app.Application;
-import android.os.Bundle;
-import android.widget.Toast;
-import dk.borgstrup.ward.client.connection.Messages;
 import dk.borgstrup.ward.client.connection.ServerAdministrator;
 import dk.borgstrup.ward.client.connection.ServerInfo;
 import dk.borgstrup.ward.client.connection.WardConnection;
 import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
-public class WardApplication extends Application implements WardConnectionListener {
+public class WardApplication extends Application {
 	
 	public ServerAdministrator serverAdmin = null;
 
 	public WardConnection conn = null;
 	public ServerInfo server = null;
 	
-	public Playlist playlist = null;
+	public Playlist playlist;
 	
 	public WardApplication() {
 		super();
 		serverAdmin = new ServerAdministrator(this);
+		playlist = new Playlist();
 	}
 	
 	/**
@@ -33,13 +31,13 @@ public class WardApplication extends Application implements WardConnectionListen
 	 */
 	public boolean connectTo( ServerInfo server, WardConnectionListener listener ) {
 		conn = new WardConnection(server.getHost(), server.getPort());
-		conn.addListener(listener);
-		conn.addListener(this);
+		conn.addListener( listener );
 		this.server = server;
 		try {
 			if (conn.Connect()) {
 				serverAdmin.setLatest(server);
-				playlist = null;
+				this.playlist = new Playlist();
+				conn.addListener( this.playlist );
 				return true;
 			}
 		} catch (UnknownHostException e) {
@@ -51,16 +49,6 @@ public class WardApplication extends Application implements WardConnectionListen
 	
 	public boolean connectTo( ServerInfo server ) {
 		return connectTo( server, null );
-	}
-
-	@Override
-	public void receivedMessage(int message, Bundle data) {
-		
-		switch (message) {
-		case Messages.GET_PLAYLIST:
-			playlist = new Playlist( data.getStringArray(Messages.EXTRA_PLAYLIST_ITEMS) );
-			break;
-		}
 	}
 
 }

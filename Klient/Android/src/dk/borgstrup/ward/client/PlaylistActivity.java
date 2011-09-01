@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
-import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -15,7 +17,6 @@ import dk.borgstrup.ward.client.connection.WardConnectionListener;
 public class PlaylistActivity extends Activity implements WardConnectionListener {
 	
 	private WardApplication app;
-	private Resources res;
 	
 	private ProgressDialog setupDialog;
 	
@@ -28,15 +29,14 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
         setContentView(R.layout.playlist);
         app = (WardApplication)getApplication();
         
-        res = getResources();
-        
         app.conn.addListener( this );
 
     	list = (ListView)findViewById(R.id.playlist_list);
         setupDialog = new ProgressDialog(this);
+
         setupDialog.setTitle( R.string.retrieving_playlist );
         setupDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        setupDialog.setCancelable(true);
+        setupDialog.setCancelable(true);{}
         setupDialog.setOnCancelListener(new OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
@@ -45,13 +45,25 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 			}
 		});
         
-        if ( app.playlist == null ) {
+        if ( app.playlist.size() == 0 ) {
         	setupDialog.show();
         	app.conn.requestPlaylist();
         } else {
         	initializeListView();
         }
     }
+    
+    @Override
+    public void onStart() {
+    	super.onStart();
+    	scrollToCurrentItem();
+    }
+
+	private void scrollToCurrentItem() {
+		if (app.playlist.getCurrentItem() >= 0) {
+    		list.setSelection( app.playlist.getCurrentItem() );
+    	}
+	}
     
     @Override
     public void onDestroy() {
@@ -62,7 +74,6 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 	private void initializeListView() {
         this.adapter = new PlaylistAdapter(this, app.playlist);
 
-        list = (ListView)findViewById(R.id.playlist_list);
         list.setAdapter( this.adapter );
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -98,6 +109,11 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 		        	initializeListView();
 					if (setupDialog.isShowing())
 						setupDialog.dismiss();
+					scrollToCurrentItem();
+					break;
+				case Messages.GET_PLAYLIST_POSITION:
+//					int position = data.getInt( Messages.EXTRA_PLAYLIST_POSITON );
+					PlaylistActivity.this.adapter.notifyDataSetChanged();
 					break;
 				case Messages.ERROR:
 					int error = data.getInt( Messages.EXTRA_ERROR );
@@ -111,5 +127,26 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 			}
 		});
 	}
+
+	
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.playlist_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch (item.getItemId()) {
+    	case R.id.playlist_refresh:
+    		app.conn.requestPlaylist();
+    		app.conn.requestPlaylistPosition();
+    		setupDialog.show();
+    		return true;
+    	default:
+    		return false;
+    	}
+    }
 
 }

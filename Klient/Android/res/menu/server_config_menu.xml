@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="@string/server_config_add" android:id="@+id/server_config_menu_add" android:icon="@android:drawable/ic_menu_add"></item>
+    <item android:title="@string/server_config_add" android:id="@+id/server_config_menu_add" android:icon="@drawable/ic_menu_add"></item>
 </menu>

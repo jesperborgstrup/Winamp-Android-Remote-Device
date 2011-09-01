@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import dk.borgstrup.ward.client.connection.Messages;
@@ -39,7 +38,7 @@ public class MainActivity extends Activity implements WardConnectionListener {
 	private ProgressDialog setupDialog;
 	
 	private int messageCounter = 0;
-	private static int MESSAGES_TO_RECEIVE_DURING_SETUP = 3;
+	private static int MESSAGES_TO_RECEIVE_DURING_SETUP = 1;
 	
     /** Called when the activity is first created. */
     @Override
@@ -104,6 +103,7 @@ public class MainActivity extends Activity implements WardConnectionListener {
     	app.conn.requestVolume();
     	app.conn.requestPlaybackStatus();
     	app.conn.requestCurrentTitle();
+        app.conn.requestPlaylistPosition();
     }
 
 	private void initializeComponents() {

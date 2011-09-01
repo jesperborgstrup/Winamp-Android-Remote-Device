@@ -12,4 +12,9 @@ public class PlaylistItem {
 		return this.title;
 	}
 	
+	@Override
+	public String toString() {
+		return this.title;
+	}
+	
 }

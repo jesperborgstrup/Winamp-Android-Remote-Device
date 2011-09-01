@@ -176,6 +176,12 @@ public class WardConnection {
 		if (isConnected())
 			mw.requestPlaylist();
 	}
+	
+	public void requestPlaylistPosition() {
+		if (isConnected()) {
+			mw.requestPlaylistPosition();
+		}
+	}
 
 	/**
 	 * Playback a specific playlist item 

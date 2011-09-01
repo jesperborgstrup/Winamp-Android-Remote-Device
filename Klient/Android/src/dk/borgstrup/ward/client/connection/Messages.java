@@ -18,6 +18,7 @@ public class Messages {
 	public static final int GET_CURRENT_TITLE = 120;
 	
 	public static final int GET_PLAYLIST = 150;
+	public static final int GET_PLAYLIST_POSITION = 151;
 	
 	public static final int ERROR = 200;
 
@@ -38,6 +39,7 @@ public class Messages {
 	public static final String EXTRA_CURRENT_TITLE = "current_title";
 	
 	public static final String EXTRA_PLAYLIST_ITEMS = "playlist_items";
+	public static final String EXTRA_PLAYLIST_POSITON = "playlist_position";
 
 	public static final int PLAYBACK_NOT_PLAYING = 0;
 	public static final int PLAYBACK_PLAYING = 1;

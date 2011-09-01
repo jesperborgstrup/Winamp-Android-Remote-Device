@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class PlaylistAdapter extends BaseAdapter {
@@ -44,11 +45,17 @@ public class PlaylistAdapter extends BaseAdapter {
 		
 		PlaylistItem item = playlist.get( position );
 		if (item != null) {
+			LinearLayout layout = (LinearLayout)v.findViewById(R.id.playlist_row_layout);
 			TextView tracknumber = (TextView)v.findViewById(R.id.playlist_row_tracknumber);
 			TextView title = (TextView)v.findViewById(R.id.playlist_row_title);
 			
 			tracknumber.setText( (position+1) + ". " );
 			title.setText( item.getTitle() );
+			if (playlist.isCurrentItem( item )) {
+				layout.setBackgroundResource(R.color.white);
+			} else {
+				layout.setBackgroundResource(R.color.black);
+			}
 		}
 		
 		return v;

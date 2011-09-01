@@ -3,7 +3,8 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent" android:orientation="horizontal"
-  android:paddingTop="5dp" android:paddingBottom="5dp" android:paddingLeft="10dp" android:minHeight="60sp" android:gravity="center_vertical">
+  android:paddingTop="5dp" android:paddingBottom="5dp" android:paddingLeft="10dp" android:minHeight="60sp" android:gravity="center_vertical"
+  android:id="@+id/playlist_row_layout" android:background="@drawable/playlist_row_selected_background">
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/playlist_row_tracknumber" android:textSize="16sp" android:textStyle="bold" android:paddingRight="5dp"></TextView>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/playlist_row_title" android:textSize="16sp" android:textStyle="bold"></TextView>
 </LinearLayout>

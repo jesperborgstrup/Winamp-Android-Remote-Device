@@ -13,13 +13,11 @@ import dk.borgstrup.ward.client.connection.ServerInfo;
 public class ServerInfoAdapter extends BaseAdapter {
 	
 	private ServerConfiguration config;
-	private ServerAdministrator admin;
 	private Context context;
 
 	public ServerInfoAdapter(Context context, ServerAdministrator admin) {
 		super();
 		this.context = context;
-		this.admin = admin;
 		this.config = admin.getConfiguration();
 	}
 

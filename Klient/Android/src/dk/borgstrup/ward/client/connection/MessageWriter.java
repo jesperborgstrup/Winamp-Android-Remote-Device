@@ -106,6 +106,16 @@ public class MessageWriter {
 		}
 	}
 
+	public void requestPlaylistPosition() {
+		try {
+			writeMessageType( Messages.GET_PLAYLIST_POSITION );
+			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_PLAYLIST_POSITION");
+		} catch (IOException e) {
+			Settings.LogW("MessageWriter::RequestPlaylistPosition::IOException", e);
+		}
+	}
+
 	public void playPlaylistItem(int position) {
 		try {
 			writeMessageType( Messages.PLAY_PLAYLIST_ITEM );
