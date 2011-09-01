@@ -1,6 +1,8 @@
 package dk.borgstrup.ward.client;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,8 +54,12 @@ public class PlaylistAdapter extends BaseAdapter {
 			tracknumber.setText( (position+1) + ". " );
 			title.setText( item.getTitle() );
 			if (playlist.isCurrentItem( item )) {
-				layout.setBackgroundResource(R.color.white);
+				tracknumber.setTypeface(Typeface.DEFAULT_BOLD);
+				title.setTypeface(Typeface.DEFAULT_BOLD);
+				layout.setBackgroundResource(R.color.dark_grey);
 			} else {
+				tracknumber.setTypeface(Typeface.DEFAULT);
+				title.setTypeface(Typeface.DEFAULT);
 				layout.setBackgroundResource(R.color.black);
 			}
 		}
