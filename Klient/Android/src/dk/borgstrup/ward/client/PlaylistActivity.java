@@ -32,7 +32,14 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
         app.conn.addListener( this );
 
     	list = (ListView)findViewById(R.id.playlist_list);
-        setupDialog = new ProgressDialog(this);
+    	
+        setupProgressDialog();
+        
+       	initializeListView();
+    }
+
+	private void setupProgressDialog() {
+		setupDialog = new ProgressDialog(this);
 
         setupDialog.setTitle( R.string.retrieving_playlist );
         setupDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -44,14 +51,7 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
 				PlaylistActivity.this.finish();
 			}
 		});
-        
-        if ( app.playlist.size() == 0 ) {
-        	setupDialog.show();
-        	app.conn.requestPlaylist();
-        } else {
-        	initializeListView();
-        }
-    }
+	}
     
     @Override
     public void onStart() {
@@ -60,8 +60,8 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
     }
 
 	private void scrollToCurrentItem() {
-		if (app.playlist.getCurrentItem() >= 0) {
-    		list.setSelection( app.playlist.getCurrentItem() );
+		if (app.winamp.playlist.getCurrentItem() >= 0) {
+    		list.setSelection( app.winamp.playlist.getCurrentItem() );
     	}
 	}
     
@@ -72,7 +72,7 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
     }
 
 	private void initializeListView() {
-        this.adapter = new PlaylistAdapter(this, app.playlist);
+        this.adapter = new PlaylistAdapter(this, app.winamp.playlist);
 
         list.setAdapter( this.adapter );
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {

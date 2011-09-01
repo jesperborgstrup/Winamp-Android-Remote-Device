@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/playlist_refresh" android:id="@+id/playlist_refresh" android:icon="@drawable/ic_menu_refresh"></item>
+</menu>

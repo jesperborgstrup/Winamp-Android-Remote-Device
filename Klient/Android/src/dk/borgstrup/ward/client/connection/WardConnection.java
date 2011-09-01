@@ -16,7 +16,7 @@ import dk.borgstrup.ward.client.Settings;
 
 import android.os.Bundle;
 
-public class WardConnection {
+public class WardConnection extends Thread {
 	
 	private String host;
 	private int port;
@@ -34,6 +34,7 @@ public class WardConnection {
 	
 	public WardConnection(String host, int port )
 	{
+		super();
 	    this.host = host;
 	    this.port = port;
 	    this.listeners = new ArrayList<WardConnectionListener>();
@@ -120,10 +121,11 @@ public class WardConnection {
 	/**
 	 * Stop playback
 	 */
-	public void stop() {
+/*	public void stop() {
 		if (isConnected())
 			mw.stop();
 	}
+	*/
 	
 	/**
 	 * Pause playback

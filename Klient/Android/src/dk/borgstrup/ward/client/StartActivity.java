@@ -29,7 +29,7 @@ public class StartActivity extends Activity implements WardConnectionListener {
 	private Resources res;
 	
 	private WardApplication app;
-
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {

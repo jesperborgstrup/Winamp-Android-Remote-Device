@@ -15,12 +15,11 @@ public class WardApplication extends Application {
 	public WardConnection conn = null;
 	public ServerInfo server = null;
 	
-	public Playlist playlist;
+	public WinampManager winamp = null;
 	
 	public WardApplication() {
 		super();
 		serverAdmin = new ServerAdministrator(this);
-		playlist = new Playlist();
 	}
 	
 	/**
@@ -36,8 +35,7 @@ public class WardApplication extends Application {
 		try {
 			if (conn.Connect()) {
 				serverAdmin.setLatest(server);
-				this.playlist = new Playlist();
-				conn.addListener( this.playlist );
+				this.winamp = new WinampManager(conn);
 				return true;
 			}
 		} catch (UnknownHostException e) {

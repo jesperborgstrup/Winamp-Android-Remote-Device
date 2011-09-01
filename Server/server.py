@@ -98,6 +98,7 @@ class ClientThread( threading.Thread ):
 					# We send 4-byte integer messages
 					this_message = struct.unpack( ">I", char + self.buffer.consume_one() + self.buffer.consume_one() + self.buffer.consume_one() )[0]
 					
+					
 					for msg in messages:
 						if this_message == msg[0]:
 							self.server.S.log( "Client sent message %s" % msg, level=10 )
@@ -199,7 +200,10 @@ class ClientThread( threading.Thread ):
 		
 	def play_playlist_item(self, position):
 		self.server.S.log(  "Received from %s:%s: play_playlist_item(%d)" % (str(self.host), str(self.port), position), level=7 )
-		if self.server.winamp.getPlaybackStatus() == self.server.winamp.PLAYBACK_PLAYING:
+		
+		# If playback is paused, winamp apparently will not receive
+		# a new playlist position. Solution: stop first
+		if self.server.winamp.getPlaybackStatus() == self.server.winamp.PLAYBACK_PAUSE:
 			self.server.winamp.stop()
 		self.server.winamp.setPlaylistPosition( position )
 		self.server.winamp.play()

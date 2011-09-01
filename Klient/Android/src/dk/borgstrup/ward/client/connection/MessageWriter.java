@@ -73,6 +73,7 @@ public class MessageWriter {
 		try {
 			writeMessageType( Messages.GET_VOLUME );
 			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_VOLUME");
 		} catch (IOException e) {
 			Settings.LogW("MessageWriter::RequestVolume::IOException", e);
 		}
@@ -82,6 +83,7 @@ public class MessageWriter {
 		try {
 			writeMessageType( Messages.GET_PLAYBACK_STATUS );
 			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_PLAYBACK_STATUS");
 		} catch (IOException e) {
 			Settings.LogW("MessageWriter::RequestPlaybackStatus::IOException", e);
 		}
@@ -91,6 +93,7 @@ public class MessageWriter {
 		try {
 			writeMessageType( Messages.GET_CURRENT_TITLE );
 			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_CURRENT_TITLE");
 		} catch (IOException e) {
 			Settings.LogW("MessageWriter::RequestCurrentTitle::IOException", e);
 		}

@@ -1,9 +1,6 @@
 package dk.borgstrup.ward.client;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -35,11 +32,6 @@ public class MainActivity extends Activity implements WardConnectionListener {
 	
 	private WardApplication app;
 	
-	private ProgressDialog setupDialog;
-	
-	private int messageCounter = 0;
-	private static int MESSAGES_TO_RECEIVE_DURING_SETUP = 1;
-	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,17 +52,6 @@ public class MainActivity extends Activity implements WardConnectionListener {
         
         app.conn.addListener( this );
         
-        setupDialog = new ProgressDialog(this);
-        setupDialog.setTitle( R.string.setting_up_connection );
-        setupDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        setupDialog.setCancelable(true);
-        setupDialog.setOnCancelListener(new OnCancelListener() {
-			@Override
-			public void onCancel(DialogInterface dialog) {
-				dialog.dismiss();
-				MainActivity.this.finish();
-			}
-		});
     }
   
     @Override
@@ -82,15 +63,13 @@ public class MainActivity extends Activity implements WardConnectionListener {
     @Override
     public void onStart() {
     	super.onStart();
-    	messageCounter = 0;
 
-    	setupDialog.show();
-    	
     	if (app.conn.getLastError() != -1) {
     		finish();
-    	} else if (app.conn.getLastInfo() == Messages.INFO_CONNECTED_EVERYTHING_OK) {
-    		updateUI();
-    	}
+    	} else
+    		while ( !app.winamp.isInitialized() );
+    	
+    	updateUI();
     	
     }
   
@@ -100,10 +79,12 @@ public class MainActivity extends Activity implements WardConnectionListener {
     }
     
     private void updateUI() {
-    	app.conn.requestVolume();
-    	app.conn.requestPlaybackStatus();
-    	app.conn.requestCurrentTitle();
-        app.conn.requestPlaylistPosition();
+		volumeControl.setProgress( app.winamp.getVolume() ) ;
+		int percent = app.winamp.getVolume() * 100 / 255;
+		volumeLabel.setText( res.getString( R.string.volume_percent, percent ) );
+		playButton.setEnabled( app.winamp.getPlaybackStatus() != Messages.PLAYBACK_PLAYING );
+		pauseButton.setEnabled( app.winamp.getPlaybackStatus() == Messages.PLAYBACK_PLAYING );
+		MainActivity.this.setTitle( app.winamp.getCurrenTitle() );
     }
 
 	private void initializeComponents() {
@@ -184,48 +165,15 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				
 				switch (message) {
 				case Messages.GET_VOLUME:
-					int volume = data.getInt( Messages.EXTRA_VOLUME );
-					volumeControl.setProgress( volume ) ;
-					int percent = volume * 100 / 255;
-					volumeLabel.setText( res.getString( R.string.volume_percent, percent ) );
-					break;
 				case Messages.GET_PLAYBACK_STATUS:
-					int status = data.getInt( Messages.EXTRA_PLAYBACK_STATUS );
-					playButton.setEnabled( status != Messages.PLAYBACK_PLAYING );
-					pauseButton.setEnabled( status == Messages.PLAYBACK_PLAYING );
-					break;
 				case Messages.GET_CURRENT_TITLE:
-					String title = data.getString( Messages.EXTRA_CURRENT_TITLE );
-					MainActivity.this.setTitle( title );
-					break;
-					/*
-				case Messages.ERROR:
-					int error = data.getInt( Messages.EXTRA_ERROR );
-					switch (error) {
-					case Messages.ERROR_WINAMP_NOT_RUNNING:
-						Toast.makeText(MainActivity.this, R.string.winamp_not_running, Toast.LENGTH_LONG).show();
-						finish();
-						break;
-					}
-					break;
-					*/
-				case Messages.INFO:
-					int info = data.getInt( Messages.EXTRA_INFO );
-					switch (info) {
-					case Messages.INFO_CONNECTED_EVERYTHING_OK:
-						updateUI();
-						break;
-					}
+					updateUI();
 					break;
 				}
 			}
 		});
 		Settings.LogI( "MainActivity receivedMessage: " + message + " ("+data.toString()+")" ); 
 
-		messageCounter++;
-		if (messageCounter >= MESSAGES_TO_RECEIVE_DURING_SETUP && setupDialog.isShowing()) {
-			setupDialog.dismiss();
-		}
 	}
 	
     @Override
