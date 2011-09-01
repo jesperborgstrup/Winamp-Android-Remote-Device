@@ -1,20 +1,9 @@
-import sys, os, time, settings, glob, threading, winamp, server, traceback
-
-def reload_modules():
-	S = settings.Settings()
-	S.log( "Reloading modules...", level=3 )
-	for (name, module) in sys.modules.items():
-		if str(module).startswith('<module') and name not in ['__main__']:
-			reload(module)
-			
-	S = settings.Settings()
-	S.log( "Done reloading modules.", level=3 )
-
+import sys, os, time, settings, glob, threading, traceback, subprocess, win32api
 
 class ChangeMonitor(threading.Thread):
 	
 	S = settings.Settings()
-	ward_server = None
+	server_process = None
 	
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -33,10 +22,10 @@ class ChangeMonitor(threading.Thread):
 		while 1:
 			time.sleep(1)
 			if self.poll():
-				print
-				print "-------------------------------------------------------"
-				print "Noticed a change in server source. Restarting server..."
-				print "-------------------------------------------------------"
+				self.S.log( "", level=1 )
+				self.S.log( "-------------------------------------------------------", level=1 )
+				self.S.log( "Noticed a change in server source. Restarting server...", level=1 )
+				self.S.log( "-------------------------------------------------------", level=1 )
 				self.start_server()
 		
 	def poll(self):
@@ -59,22 +48,14 @@ class ChangeMonitor(threading.Thread):
 	
 	def start_server(self):
 		try:
-			if self.ward_server != None:
-				self.ward_server.stop()
-				reload_modules()
+			if self.server_process != None:
+				self.server_process.kill()
+				self.server_process.wait()
 				
-			self.S = settings.Settings()
-			
-			winamp_class = winamp.Winamp()
-		
-			
-			self.S.log("Initiating server socket on %s:%d..." % (self.S.hostname, self.S.port), 3 )
-			self.ward_server = server.Server(self.S.hostname, self.S.port, winamp_class)
-			self.S.log("Starting server...", 2)
-			self.ward_server.start()
-		except Exception as e:
-			print "=== AN EXCEPTION OCCURED ==="
-			traceback.print_exc()
+			self.server_process = subprocess.Popen( [sys.executable, r"run_server.py"] )
+
+		except Exception:
+			self.S.log_exception()
 	
 		
 

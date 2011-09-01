@@ -1,11 +1,9 @@
 ﻿import socket, sys, time, threading, settings, struct, pickle, locale, winamp
 from messages import Messages
 
-S = settings.Settings()
-
-
 class Server(threading.Thread):
 	threads = []
+	S = settings.Settings()
 	
 	def __init__(self, host, port, winamp):
 		threading.Thread.__init__(self)
@@ -19,23 +17,22 @@ class Server(threading.Thread):
 		self.default_encoding = locale.getdefaultlocale()[1]
 		
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		#self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind((self.host,self.port))
 
 	def run(self):
 		self.socket.listen(self.backlog)
-		self.log( "Server started", 2 )
+		self.S.log( "Server started", 2 )
 		while 1:
-			client, address = self.socket.accept()
-			self.log( "Client %s:%s connected" % address, level=4 )
-			thread = ClientThread( self, client, address )
-			self.threads.append(thread)
-			thread.start()
+			try:
+				client, address = self.socket.accept()
+				self.S.log( "Client %s:%s connected" % address, level=4 )
+				thread = ClientThread( self, client, address )
+				self.threads.append(thread)
+				thread.start()
+			except Exception as e:
+				self.S.log_exception()
 		
-	def log(self, msg, level=5):
-		if level <= S.LOG_PRINT_LEVEL:
-			print msg
-	
 	def stop(self):
 		self.winamp_watcher.stop()
 		self.socket.close()
@@ -59,20 +56,20 @@ class ClientThread( threading.Thread ):
 		self.host,self.port = address
 		self.buffer = CommandBuffer()
 		self.filler = BufferFiller(server, client, address, self.buffer)
-		self.server.log( "ClientThread initiated", 6 )
+		self.server.S.log( "ClientThread initiated", 13 )
 
 		try:
 			self.server.winamp._Winamp__ensure_winamp_running()
 			self.send_info( Messages.INFO_CONNECTED_EVERYTHING_OK )
 		except winamp.WinampNotRunningException:
-			self.server.log( "Winamp not running..!", level=4 )
+			self.server.S.log( "Winamp not running..!", level=6 )
 			self.send_error( Messages.ERROR_WINAMP_NOT_RUNNING )
 		
 	def run(self):
 		self.filler.start()
-		self.server.log( "ClientThread started", 7)
+		self.server.S.log( "ClientThread started", 13)
 		while 1:
-			self.server.log( "ClientThread start of main loop", 7)
+			self.server.S.log( "ClientThread start of main loop", 15)
 			has_lock = False
 			try:
 				self.buffer.cond.acquire()
@@ -85,7 +82,7 @@ class ClientThread( threading.Thread ):
 				if has_lock:
 					self.buffer.cond.release()
 					has_lock = False
-			self.server.log( "ClientThread main loop 2", 9)
+			self.server.S.log( "ClientThread main loop 2", 13)
 			if self.parse_function == None:
 				if self.param_index == None:
 					
@@ -94,18 +91,18 @@ class ClientThread( threading.Thread ):
 					
 					for msg in messages:
 						if this_message == msg[0]:
-							self.server.log( "Client sent message %s" % msg, level=7 )
+							self.server.S.log( "Client sent message %s" % msg, level=10 )
 							self.message = msg
 							self.function, self.param_index, self.params = (msg[1], 2, [])
 					if self.param_index == None:
-						self.server.log( "Client sent UNKNOWN message %s" % this_message, level=3 )
+						self.server.S.log( "Client sent UNKNOWN message %s" % this_message, level=3 )
 				else:
 					if len(self.message) <= self.param_index:
 						assert char == chr(0)
 						try:
 							self.function(self,*self.params)
 						except winamp.WinampNotRunningException:
-							self.server.log( "Winamp not running..!", level=4 )
+							self.server.S.log( "Winamp not running..!", level=6 )
 							self.send_error( Messages.ERROR_WINAMP_NOT_RUNNING )
 						self.function, self.message, self.param_index, self.params, self.parse_function = (None, None, None, None, None)
 					else:
@@ -117,7 +114,7 @@ class ClientThread( threading.Thread ):
 		
 		self.filler.kill()
 		self.filler.join()
-		self.server.log( "Client %s:%s disconnected" % (str(self.host), str(self.port)), level=2 )
+		self.server.S.log( "Client %s:%s disconnected" % (str(self.host), str(self.port)), level=3 )
 
 	def parse_int(self, char):
 		self.data += char
@@ -141,9 +138,9 @@ class ClientThread( threading.Thread ):
 			self.param_index += 1
 			self.parse_function, self.data = (None, "")
 	def parse_string(self, char):
-		self.server.log("parse_string: %s (%d)" % (char, ord(char)), 10)
+		self.server.S.log("parse_string: %s (%d)" % (char, ord(char)), 10)
 		if char == chr(0):
-			self.server.log("parse_string: %s" % (self.data), 9)
+			self.server.S.log("parse_string: %s" % (self.data), 9)
 			self.params.append(self.data)
 			self.param_index += 1
 			self.parse_function, self.data = (None, "")
@@ -161,45 +158,45 @@ class ClientThread( threading.Thread ):
 		self.send_message( Messages.STOP )
 			
 	def play(self):
-		self.server.log(  "Received from %s:%s: play()" % (str(self.host), str(self.port)), level=4 )
+		self.server.S.log(  "Received from %s:%s: play()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.play()
 		self.send_playback_status()
 			
 	def stop(self):
-		self.server.log(  "Received from %s:%s: stop()" % (str(self.host), str(self.port)), level=4 )
+		self.server.S.log(  "Received from %s:%s: stop()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.stop()
 		self.send_playback_status()
 			
 	def pause(self):
-		self.server.log(  "Received from %s:%s: pause()" % (str(self.host), str(self.port)), level=4 )
+		self.server.S.log(  "Received from %s:%s: pause()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.pause()
 		self.send_playback_status()
 			
 	def previous(self):
-		self.server.log(  "Received from %s:%s: previous()" % (str(self.host), str(self.port)), level=4 )
+		self.server.S.log(  "Received from %s:%s: previous()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.previous()
 		self.send_playback_status()
 		self.send_current_title()
 			
 	def next(self):
-		self.server.log(  "Received from %s:%s: next()" % (str(self.host), str(self.port)), level=4 )
+		self.server.S.log(  "Received from %s:%s: next()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.next()
 		self.send_playback_status()
 		self.send_current_title()
 			
 	def set_volume(self, amount):
-		self.server.log(  "Received from %s:%s: set_volume(%d)" % (str(self.host), str(self.port), amount), level=4 )
+		self.server.S.log(  "Received from %s:%s: set_volume(%d)" % (str(self.host), str(self.port), amount), level=7 )
 		self.server.winamp.setVolume( amount )
 		
 	def play_playlist_item(self, position):
-		self.server.log(  "Received from %s:%s: play_playlist_item(%d)" % (str(self.host), str(self.port), position), level=4 )
+		self.server.S.log(  "Received from %s:%s: play_playlist_item(%d)" % (str(self.host), str(self.port), position), level=7 )
 		if self.server.winamp.getPlaybackStatus() == self.server.winamp.PLAYBACK_PLAYING:
 			self.server.winamp.stop()
 		self.server.winamp.setPlaylistPosition( position )
 		self.server.winamp.play()
 		
 	def get_volume(self):
-		self.server.log(  "Received from %s:%s: get_volume()" % (str(self.host), str(self.port) ), level=6 )
+		self.server.S.log(  "Received from %s:%s: get_volume()" % (str(self.host), str(self.port) ), level=7 )
 		self.send_volume()
 		
 	def send_volume(self):
@@ -209,29 +206,29 @@ class ClientThread( threading.Thread ):
 		self.send_message( Messages.STOP )
 		
 	def get_playback_status(self):
-		self.server.log(  "Received from %s:%s: get_playback_status()" % (str(self.host), str(self.port) ), level=6 )
+		self.server.S.log(  "Received from %s:%s: get_playback_status()" % (str(self.host), str(self.port) ), level=7 )
 		self.send_playback_status()
 		
 	def send_playback_status(self):
 		status = self.server.winamp.getPlaybackStatus()
 		self.send_message( Messages.GET_PLAYBACK_STATUS )
-		self.server.log( "Sending playback status: %d" % status, level=7 )
+		self.server.S.log( "Sending playback status: %d" % status, level=7 )
 		self.client.send( struct.pack(">i", self.server.winamp.getPlaybackStatus()))
 		self.send_message( Messages.STOP )
 		
 	def get_current_title(self):
-		self.server.log(  "Received from %s:%s: get_current_title()" % (str(self.host), str(self.port) ), level=6 )
+		self.server.S.log(  "Received from %s:%s: get_current_title()" % (str(self.host), str(self.port) ), level=7 )
 		self.send_current_title()
 		
 	def send_current_title(self):
 		title = self.server.winamp.getCurrentPlayingTitle()
 		self.send_message( Messages.GET_CURRENT_TITLE )
 		self.send_string( title )
-		self.server.log(  "Sending current item %s" % self.server.winamp.getCurrentPlayingTitle(), level=6 )
+		self.server.S.log(  "Sending current item %s" % self.server.winamp.getCurrentPlayingTitle(), level=7 )
 		self.send_message( Messages.STOP )
 		
 	def get_playlist(self):
-		self.server.log(  "Received from %s:%s: get_playlist()" % (str(self.host), str(self.port) ), level=6 )
+		self.server.S.log(  "Received from %s:%s: get_playlist()" % (str(self.host), str(self.port) ), level=7 )
 		self.send_playlist()
 		
 	def send_playlist(self):
@@ -239,7 +236,7 @@ class ClientThread( threading.Thread ):
 		self.send_message( Messages.GET_PLAYLIST )
 		self.client.send( struct.pack(">I", len( playlist ) ) )
 		for item in playlist:
-			self.server.log( "Sending playlist item: %s" % item, level=10 )
+			self.server.S.log( "Sending playlist item: %s" % item, level=11 )
 			self.send_string( item )
 		self.send_message( Messages.STOP )
 		
@@ -343,13 +340,13 @@ class WinampWatcher(threading.Thread):
 			#Volume
 			volume = self.winamp.getVolume()
 			if volume != self.val_volume:
-				self.server.log("Volume changed (from %d to %d)" % (self.val_volume, volume), level=8)
+				self.server.S.log("Volume changed (from %d to %d)" % (self.val_volume, volume), level=8)
 				self.val_volume = volume
 				self.server.call_on_all_clients(ClientThread.send_volume)
 				
 			track = self.winamp.getCurrentPlayingTitle()
 			if track != self.val_current_track:
-				self.server.log("Track changed to %s" % (track), level=7)
+				self.server.S.log("Track changed to %s" % (track), level=7)
 				self.val_current_track = self.winamp.getCurrentPlayingTitle()
 				self.server.call_on_all_clients(ClientThread.send_current_title)
 

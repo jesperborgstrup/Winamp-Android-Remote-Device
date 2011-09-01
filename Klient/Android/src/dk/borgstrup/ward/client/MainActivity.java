@@ -51,6 +51,14 @@ public class MainActivity extends Activity implements WardConnectionListener {
         res = getResources();
         initializeComponents();
         
+        // If the application is killed while in this activity,
+        // the line 'app.conn.addListener( this );' would return
+        // a NullPointerException
+        if ( app.conn == null ) {
+        	finish();
+        	return;
+        }
+        
         app.conn.addListener( this );
         
         setupDialog = new ProgressDialog(this);
