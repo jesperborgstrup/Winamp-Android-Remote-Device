@@ -39,31 +39,26 @@ public class PlaylistAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View v = convertView;
-		
-		if (v == null) {
-			LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			v = vi.inflate(R.layout.playlist_row, null);
-		}
-		
 		PlaylistItem item = playlist.get( position );
+		
 		if (item != null) {
-			LinearLayout layout = (LinearLayout)v.findViewById(R.id.playlist_row_layout);
+
+			// This is probably inefficient. No need to inflate every view
+			// every time, but only (re)inflate when necessary
+			LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			if (playlist.isCurrentItem( item )) {
+				v = vi.inflate(R.layout.playlist_row_playing, null);
+			} else {
+				v = vi.inflate(R.layout.playlist_row, null);
+			}
+			
 			TextView tracknumber = (TextView)v.findViewById(R.id.playlist_row_tracknumber);
 			TextView title = (TextView)v.findViewById(R.id.playlist_row_title);
 			
 			tracknumber.setText( (position+1) + ". " );
 			title.setText( item.getTitle() );
-			if (playlist.isCurrentItem( item )) {
-				tracknumber.setTypeface(Typeface.DEFAULT_BOLD);
-				title.setTypeface(Typeface.DEFAULT_BOLD);
-				layout.setBackgroundResource(R.color.dark_grey);
-			} else {
-				tracknumber.setTypeface(Typeface.DEFAULT);
-				title.setTypeface(Typeface.DEFAULT);
-				layout.setBackgroundResource(R.color.black);
-			}
 		}
-		
+
 		return v;
 	}
 
