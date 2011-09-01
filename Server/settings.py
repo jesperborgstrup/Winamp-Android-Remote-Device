@@ -5,6 +5,15 @@ class Settings:
 	
 	hostname = ""
 	port = 9273
+	
+	WINAMP_POLL_INTERVAL_SECONDS = 0.1
+	
+	
+	
+	
+	
+	
+	
 	LOG_PRINT_LEVEL = 5
 	LOG_FILE_LEVEL = 10
 	LOG_FILENAME = "log/log-%y-%m-%d.txt"

@@ -1,10 +1,5 @@
-import settings, winamp, server, atexit, socket, time
+import settings, winamp, server, socket, time
 
-def exit_func():
-	print "Exiting, closing socket"
-	ward_server.stop()
-	print "Socket supposedly closed"
-	
 def run_server():
 
 	S = settings.Settings()
@@ -15,8 +10,6 @@ def run_server():
 		ward_server = server.Server(S.hostname, S.port, winamp_class)
 		S.log("Starting server...", 2)
 		ward_server.start()
-		
-		atexit.register( lambda x: ward_server.stop() )
 	except Exception:
 		S.log_exception()
 
