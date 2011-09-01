@@ -16,7 +16,7 @@ class Settings:
 	
 	LOG_PRINT_LEVEL = 5
 	LOG_FILE_LEVEL = 10
-	LOG_FILENAME = "log/log-%y-%m-%d.txt"
+	LOG_FILENAME = "../log/log-%y-%m-%d.txt"
 	LOG_TIME_PREFIX = "%H:%M:%S"
 	
 	def __init__(self):

@@ -1,4 +1,4 @@
-import threading, time, server
+import threading, time, server, winamp
 
 class WinampWatcher(threading.Thread):
 	
