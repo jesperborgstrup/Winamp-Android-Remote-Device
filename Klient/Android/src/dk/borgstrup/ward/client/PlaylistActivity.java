@@ -69,6 +69,7 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
     public void onDestroy() {
     	super.onDestroy();
     	app.conn.removeListener( this );
+    	
     }
 
 	private void initializeListView() {
@@ -143,6 +144,9 @@ public class PlaylistActivity extends Activity implements WardConnectionListener
     		app.conn.requestPlaylist();
     		app.conn.requestPlaylistPosition();
     		setupDialog.show();
+    		return true;
+    	case R.id.playlist_gotocurrent:
+    		scrollToCurrentItem();
     		return true;
     	default:
     		return false;

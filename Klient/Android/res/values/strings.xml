@@ -30,4 +30,7 @@
     <string name="add_server_dialog_mac">MAC Address (optional):</string>
     <string name="add_server_dialog_invalid_mac">Invalid MAC address. Write as 00:00:00:00:00:00</string>
     <string name="server_config_wake">Wake up</string>
+    <string name="playlist_go_to_current">Go to current song</string>
+    <string name="playlist_current">Current</string>
+    <string name="main_track_position_format">Time elapsed (%s):</string>
 </resources>

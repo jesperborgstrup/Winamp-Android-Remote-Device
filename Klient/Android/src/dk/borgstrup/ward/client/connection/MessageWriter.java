@@ -89,6 +89,26 @@ public class MessageWriter {
 		}
 	}
 
+	public void requestPlayingTrackLength() {
+		try {
+			writeMessageType( Messages.GET_PLAYING_TRACK_LENGTH );
+			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_GET_PLAYING_TRACK_LENGTH");
+		} catch (IOException e) {
+			Settings.LogW("MessageWriter::RequestPlayingTrackLength::IOException", e);
+		}
+	}
+
+	public void requestPlayingTrackPosition() {
+		try {
+			writeMessageType( Messages.GET_PLAYING_TRACK_POSITION );
+			writeStopMessage();
+			Settings.LogI("MessageWriter send GET_GET_PLAYING_TRACK_POSITION");
+		} catch (IOException e) {
+			Settings.LogW("MessageWriter::RequestPlayingTrackPosition::IOException", e);
+		}
+	}
+
 	public void requestCurrentTitle() {
 		try {
 			writeMessageType( Messages.GET_CURRENT_TITLE );

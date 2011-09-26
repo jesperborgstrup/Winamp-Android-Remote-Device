@@ -1,4 +1,4 @@
-import sys, os, time, settings, glob, threading, traceback, subprocess, win32api
+import sys, os, time, settings, glob, threading, subprocess
 
 class ChangeMonitor(threading.Thread):
 	
@@ -13,8 +13,8 @@ class ChangeMonitor(threading.Thread):
 		files = filter(lambda f: f != sys.argv[0], files)
 		self.files = {}
 		
-		for file in files:
-			self.files[file] = os.stat(file).st_mtime
+		for f in files:
+			self.files[f] = os.stat(f).st_mtime
 			
 		self.start_server()
 		
@@ -37,12 +37,12 @@ class ChangeMonitor(threading.Thread):
 			change = True
 			self.files = {}
 			
-		for file in files:
-			mtime = os.stat(file).st_mtime
-			if not self.files.has_key(file) or mtime != self.files[file]:
+		for f in files:
+			mtime = os.stat(f).st_mtime
+			if not self.files.has_key(f) or mtime != self.files[f]:
 				change = True
 				
-			self.files[file] = mtime
+			self.files[f] = mtime
 			
 		return change
 	
@@ -60,6 +60,10 @@ class ChangeMonitor(threading.Thread):
 		
 
 if __name__ == "__main__":
+	sys.stdout = open("mylog.txt", "w")
+	
+#	print sys.stdout
+
 
 	monitor = ChangeMonitor()
 	monitor.start()

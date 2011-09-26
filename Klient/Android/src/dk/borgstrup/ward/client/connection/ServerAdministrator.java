@@ -12,6 +12,7 @@ import java.net.InetAddress;
 
 import android.content.Context;
 import dk.borgstrup.ward.client.Settings;
+import dk.borgstrup.ward.client.WakeOnLanSender;
 
 public class ServerAdministrator {
 
@@ -52,64 +53,18 @@ public class ServerAdministrator {
 	}
 	
 	public void wakeServer(ServerInfo server) {
-		Settings.LogI("Wake server");
-		
-        String ipStr = "192.168.0.255";
-        String macStr = server.getMac();
-        if (macStr == null) {
-        	return;
-        }
-        
-        try {
-            byte[] macBytes = getMacBytes(macStr);
-            byte[] bytes = new byte[6 + 16 * macBytes.length];
-            for (int i = 0; i < 6; i++) {
-                bytes[i] = (byte) 0xff;
-            }
-            for (int i = 6; i < bytes.length; i += macBytes.length) {
-                System.arraycopy(macBytes, 0, bytes, i, macBytes.length);
-            }
-            
-            InetAddress address = InetAddress.getByName(ipStr);
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, 9);
-            DatagramSocket socket = new DatagramSocket();
-            socket.send(packet);
-            socket.close();
-            
-            Settings.LogI("Wake-on-LAN packet sent.");
-        }
-        catch (Exception e) {
-            Settings.LogW("Failed to send Wake-on-LAN packet", e);
-        }
-	}
-        
-	/**
-	 * 
-	 * @param macStr enter like this: 00AE56F332BE
-	 * @return
-	 * @throws IllegalArgumentException
-	 */
-    private static byte[] getMacBytes(String macStr) throws IllegalArgumentException {
-        byte[] bytes = new byte[6];
-        if (macStr.length() != 12) {
-            throw new IllegalArgumentException("Invalid MAC address.");
-        }
-        try {
-        	String hex;
-            for (int i = 0; i < 6; i++) {
-            	hex = macStr.substring(i*2, i*2+2);
-            	Settings.LogI( "MAC part " + (1+i)+": " + hex);
-                bytes[i] = (byte) Integer.parseInt(hex, 16);
-            }
-        }
-        catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid hex digit in MAC address.");
-        }
-        return bytes;
-    }
-    
+		int wakePackets = 10;
+		int wakePacketInterval = 200;
+		String broadcastIP = "192.168.0.255";
 
-	
+		for (int i = 0; i < wakePackets; i++) {
+			WakeOnLanSender.sendSingleWakePacket( broadcastIP, server.getMac() );
+			try {
+				Thread.sleep( wakePacketInterval, 0 );
+			} catch (InterruptedException e) {
+			}
+		}
+	}	
 	
 	private ServerConfiguration readConfiguration() {
 		FileInputStream fis;

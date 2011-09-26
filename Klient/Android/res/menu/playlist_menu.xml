@@ -2,4 +2,5 @@
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="@string/playlist_refresh" android:id="@+id/playlist_refresh" android:icon="@drawable/ic_menu_refresh"></item>
+    <item android:titleCondensed="@string/playlist_current" android:id="@+id/playlist_gotocurrent" android:title="@string/playlist_go_to_current"></item>
 </menu>

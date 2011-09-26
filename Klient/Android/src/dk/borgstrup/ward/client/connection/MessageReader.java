@@ -2,10 +2,10 @@ package dk.borgstrup.ward.client.connection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-
-import dk.borgstrup.ward.client.Settings;
+import java.net.SocketException;
 
 import android.os.Bundle;
+import dk.borgstrup.ward.client.Settings;
 
 public class MessageReader extends Thread {
 	
@@ -30,10 +30,16 @@ public class MessageReader extends Thread {
 				} else {
 					switch (message) {
 					case Messages.GET_VOLUME:
-						tryParseGetVolume();
+						tryParseGetVolume();{}
 						break;
 					case Messages.GET_PLAYBACK_STATUS:
 						tryParseGetPlaybackStatus();
+						break;
+					case Messages.GET_PLAYING_TRACK_LENGTH:
+						tryParseGetPlayingTrackLength();
+						break;
+					case Messages.GET_PLAYING_TRACK_POSITION:
+						tryParseGetPlayingTrackPosition();
 						break;
 					case Messages.GET_CURRENT_TITLE:
 						tryParseGetCurrentTitle();
@@ -53,6 +59,9 @@ public class MessageReader extends Thread {
 					}
 					message = null;
 				}
+			} catch (SocketException e) {
+				Settings.LogW("SOCKETEXCEPTION: ("+e.getMessage()+", "+e.getLocalizedMessage()+")");
+				break;
 			} catch (IOException e) {
 				Settings.LogW("MessageReader::run::IOException", e);
 				break;
@@ -74,6 +83,22 @@ public class MessageReader extends Thread {
 		int status = stream.readInt();
 		data.putInt( Messages.EXTRA_PLAYBACK_STATUS, status );
 		conn.postMessageToListeners( Messages.GET_PLAYBACK_STATUS, data );
+	}
+
+	private void tryParseGetPlayingTrackLength() throws IOException {
+		Settings.LogI("tryparsegetPlayingTrackLength()");
+		Bundle data = new Bundle(1);
+		int status = stream.readInt();
+		data.putInt( Messages.EXTRA_PLAYING_TRACK_LENGTH, status );
+		conn.postMessageToListeners( Messages.GET_PLAYING_TRACK_LENGTH, data );
+	}
+
+	private void tryParseGetPlayingTrackPosition() throws IOException {
+		Settings.LogI("tryparsegetPlayingTrackPosition()");
+		Bundle data = new Bundle(1);
+		int status = stream.readInt();
+		data.putInt( Messages.EXTRA_PLAYING_TRACK_POSITION, status );
+		conn.postMessageToListeners( Messages.GET_PLAYING_TRACK_POSITION, data );
 	}
 
 	private void tryParseGetCurrentTitle() throws IOException {

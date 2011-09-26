@@ -15,6 +15,8 @@ public class Messages {
 	
 	public static final int GET_VOLUME = 110;
 	public static final int GET_PLAYBACK_STATUS = 115;
+	public static final int GET_PLAYING_TRACK_LENGTH = 117;
+	public static final int GET_PLAYING_TRACK_POSITION = 118;
 	public static final int GET_CURRENT_TITLE = 120;
 	
 	public static final int GET_PLAYLIST = 150;
@@ -36,6 +38,8 @@ public class Messages {
 	
 	public static final String EXTRA_VOLUME = "volume";
 	public static final String EXTRA_PLAYBACK_STATUS = "playback_status";
+	public static final String EXTRA_PLAYING_TRACK_LENGTH = "playing_track_length";
+	public static final String EXTRA_PLAYING_TRACK_POSITION = "playing_track_position";
 	public static final String EXTRA_CURRENT_TITLE = "current_title";
 	
 	public static final String EXTRA_PLAYLIST_ITEMS = "playlist_items";

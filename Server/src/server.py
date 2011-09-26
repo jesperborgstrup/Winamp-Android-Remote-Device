@@ -1,5 +1,12 @@
-﻿import socket, sys, time, threading, settings, struct, pickle, locale, winamp, winampwatcher
-from messages import Messages
+﻿from messages import Messages
+import socket
+import threading
+import settings
+import struct
+import locale
+import winamp
+import winampwatcher
+import math
 
 class Server(threading.Thread):
 	threads = []
@@ -30,7 +37,7 @@ class Server(threading.Thread):
 				thread = ClientThread( self, client, address )
 				self.threads.append(thread)
 				thread.start()
-			except Exception as e:
+			except Exception:
 				self.S.log_exception()
 		
 	def stop(self):
@@ -129,15 +136,15 @@ class ClientThread( threading.Thread ):
 	def parse_int(self, char):
 		self.data += char
 		if len(self.data) >= 4:
-			int = struct.unpack(">i", self.data)[0]
-			self.params.append(int)
+			int_val = struct.unpack(">i", self.data)[0]
+			self.params.append(int_val)
 			self.param_index += 1
 			self.parse_function, self.data = (None, "")
 	def parse_float(self, char):
 		self.data += char
 		if len(self.data) >= 4:
-			float = struct.unpack(">f", self.data)[0]
-			self.params.append(float)
+			float_val = struct.unpack(">f", self.data)[0]
+			self.params.append(float_val)
 			self.param_index += 1
 			self.parse_function, self.data = (None, "")
 	def parse_byte(self, char):
@@ -170,28 +177,28 @@ class ClientThread( threading.Thread ):
 	def play(self):
 		self.server.S.log(  "Received from %s:%s: play()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.play()
-		self.send_playback_status()
+#		self.send_playback_status()
 			
 	def stop(self):
 		self.server.S.log(  "Received from %s:%s: stop()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.stop()
-		self.send_playback_status()
+#		self.send_playback_status()
 			
 	def pause(self):
 		self.server.S.log(  "Received from %s:%s: pause()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.pause()
-		self.send_playback_status()
+#		self.send_playback_status()
 			
 	def previous(self):
 		self.server.S.log(  "Received from %s:%s: previous()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.previous()
-		self.send_playback_status()
+#		self.send_playback_status()
 		self.send_current_title()
 			
 	def next(self):
 		self.server.S.log(  "Received from %s:%s: next()" % (str(self.host), str(self.port)), level=7 )
 		self.server.winamp.next()
-		self.send_playback_status()
+#		self.send_playback_status()
 		self.send_current_title()
 			
 	def set_volume(self, amount):
@@ -227,6 +234,28 @@ class ClientThread( threading.Thread ):
 		self.send_message( Messages.GET_PLAYBACK_STATUS )
 		self.server.S.log( "Sending playback status: %d" % status, level=7 )
 		self.client.send( struct.pack(">i", self.server.winamp.getPlaybackStatus()))
+		self.send_message( Messages.STOP )
+		
+	def get_playing_track_length(self):
+		self.server.S.log(  "Received from %s:%s: get_playing_track_length()" % (str(self.host), str(self.port) ), level=7 )
+		self.send_playing_track_length()
+		
+	def send_playing_track_length(self):
+		length = self.server.winamp.getPlayingTrackLength()
+		print repr( length )
+		self.send_message( Messages.GET_PLAYING_TRACK_LENGTH )
+		self.client.send( struct.pack(">I", length ) )
+		self.send_message( Messages.STOP )
+		
+	def get_playing_track_position(self):
+		self.server.S.log(  "Received from %s:%s: get_playing_track_position()" % (str(self.host), str(self.port) ), level=7 )
+		self.send_playing_track_position()
+		
+	def send_playing_track_position(self):
+		position = max( self.server.winamp.getPlayingTrackPosition(), 0 )
+		print repr( self.server.winamp.getPlayingTrackPosition() )
+		self.send_message( Messages.GET_PLAYING_TRACK_POSITION )
+		self.client.send( struct.pack(">I", position ) )
 		self.send_message( Messages.STOP )
 		
 	def get_current_title(self):
@@ -272,20 +301,22 @@ class ClientThread( threading.Thread ):
 		self.client.send( struct.pack( ">H", len( encoded ) ) )
 		self.client.send( encoded )
 		
-messages = [[Messages.PLAY,       	  	     ClientThread.play],
-			[Messages.STOP,       		     ClientThread.stop],
-			[Messages.PAUSE,      		     ClientThread.pause],
-			[Messages.PREVIOUS,   		     ClientThread.previous],
-			[Messages.NEXT,        		     ClientThread.next],
-			[Messages.SET_VOLUME, 		     ClientThread.set_volume,         ClientThread.parse_byte],
-			[Messages.PLAY_PLAYLIST_ITEM,    ClientThread.play_playlist_item, ClientThread.parse_int],
+messages = [[Messages.PLAY,       	       	     ClientThread.play],
+			[Messages.STOP,       	     	     ClientThread.stop],
+			[Messages.PAUSE,      	     	     ClientThread.pause],
+			[Messages.PREVIOUS,   	     	     ClientThread.previous],
+			[Messages.NEXT,        		          ClientThread.next],
+			[Messages.SET_VOLUME, 		          ClientThread.set_volume,         ClientThread.parse_byte],
+			[Messages.PLAY_PLAYLIST_ITEM,         ClientThread.play_playlist_item, ClientThread.parse_int],
 			
-			[Messages.GET_VOLUME, 		     ClientThread.get_volume],
-			[Messages.GET_PLAYBACK_STATUS,   ClientThread.get_playback_status],
-			[Messages.GET_CURRENT_TITLE,     ClientThread.get_current_title],
+			[Messages.GET_VOLUME, 		          ClientThread.get_volume],
+			[Messages.GET_PLAYBACK_STATUS,        ClientThread.get_playback_status],
+			[Messages.GET_PLAYING_TRACK_LENGTH,   ClientThread.get_playing_track_length],
+			[Messages.GET_PLAYING_TRACK_POSITION, ClientThread.get_playing_track_position],
+			[Messages.GET_CURRENT_TITLE,          ClientThread.get_current_title],
 			
-			[Messages.GET_PLAYLIST,          ClientThread.get_playlist],
-			[Messages.GET_PLAYLIST_POSITION, ClientThread.get_playlist_position]]
+			[Messages.GET_PLAYLIST,               ClientThread.get_playlist],
+			[Messages.GET_PLAYLIST_POSITION,      ClientThread.get_playlist_position]]
 
 
 class CommandBuffer:

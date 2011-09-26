@@ -166,6 +166,16 @@ public class WardConnection extends Thread {
 			mw.requestPlaybackStatus();
 	}
 
+	public void requestPlayingTrackLength() {
+		if (isConnected())
+			mw.requestPlayingTrackLength();
+	}
+
+	public void requestPlayingTrackPosition() {
+		if (isConnected())
+			mw.requestPlayingTrackPosition();
+	}
+
 	/**
 	 * Requests the current track title
 	 */

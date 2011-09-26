@@ -1,5 +1,8 @@
 package dk.borgstrup.ward.client;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -19,7 +22,8 @@ import dk.borgstrup.ward.client.connection.WardConnectionListener;
 
 public class MainActivity extends Activity implements WardConnectionListener {
 	
-	private SeekBar volumeControl;
+	private TextView positionLabel;
+	private SeekBar positionControl;
 	
 	private ImageButton previousButton;
 	private ImageButton playButton;
@@ -27,6 +31,8 @@ public class MainActivity extends Activity implements WardConnectionListener {
 	private ImageButton nextButton;
 	
 	private TextView volumeLabel;
+	private SeekBar volumeControl;
+	
 	
 	private Resources res;
 	
@@ -49,6 +55,23 @@ public class MainActivity extends Activity implements WardConnectionListener {
         	finish();
         	return;
         }
+        
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						updateUI();
+						
+					}
+				});
+				
+			}
+		}, 0, 1000);
         
         app.conn.addListener( this );
         
@@ -77,8 +100,22 @@ public class MainActivity extends Activity implements WardConnectionListener {
     public void onConfigurationChanged(Configuration newConfig) {
     	super.onConfigurationChanged(newConfig);
     }
+	
+	private String timeFormat(int time) {
+		int hours   = time / 3600;
+		int minutes = (time - hours * 3600) / 60;
+		int seconds = time - hours * 3600 - minutes * 60;
+		if ( hours > 0 ) {
+			return String.format( "%d:%02d:%02d", hours, minutes, seconds );
+		} else {
+			return String.format( "%d:%02d", minutes, seconds );
+		}
+	}
     
     private void updateUI() {
+    	positionControl.setMax( app.winamp.getPlayingTrackLength() );
+    	positionControl.setProgress( app.winamp.getPlayingTrackPosition() );
+    	positionLabel.setText( res.getString( R.string.main_track_position_format, timeFormat( app.winamp.getPlayingTrackPosition() ) + " / " + timeFormat( app.winamp.getPlayingTrackLength() ) ) );
 		volumeControl.setProgress( app.winamp.getVolume() ) ;
 		int percent = app.winamp.getVolume() * 100 / 255;
 		volumeLabel.setText( res.getString( R.string.volume_percent, percent ) );
@@ -88,18 +125,26 @@ public class MainActivity extends Activity implements WardConnectionListener {
     }
 
 	private void initializeComponents() {
+        positionLabel = (TextView)findViewById(R.id.main_track_position_label);
+        positionControl = (SeekBar)findViewById(R.id.main_track_position_control);
+
         previousButton = (ImageButton)findViewById(R.id.mainPreviousButton);
         playButton = (ImageButton)findViewById(R.id.mainPlayButton);
         pauseButton = (ImageButton)findViewById(R.id.mainPauseButton);
         nextButton = (ImageButton)findViewById(R.id.mainNextButton);
         
         volumeLabel = (TextView)findViewById(R.id.main_volume_label);
-
-        volumeControl = (SeekBar)findViewById(R.id.mainVolumeControl);
+        volumeControl = (SeekBar)findViewById(R.id.main_volume_control);
 
         initializeButtons();
         
+        initializePositionControl();
         initializeVolumeControl();
+	}
+
+	private void initializePositionControl() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private void initializeVolumeControl() {
@@ -167,6 +212,8 @@ public class MainActivity extends Activity implements WardConnectionListener {
 				case Messages.GET_VOLUME:
 				case Messages.GET_PLAYBACK_STATUS:
 				case Messages.GET_CURRENT_TITLE:
+				case Messages.GET_PLAYING_TRACK_LENGTH:
+				case Messages.GET_PLAYING_TRACK_POSITION:
 					updateUI();
 					break;
 				}
