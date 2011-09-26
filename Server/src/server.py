@@ -242,7 +242,6 @@ class ClientThread( threading.Thread ):
 		
 	def send_playing_track_length(self):
 		length = self.server.winamp.getPlayingTrackLength()
-		print repr( length )
 		self.send_message( Messages.GET_PLAYING_TRACK_LENGTH )
 		self.client.send( struct.pack(">I", length ) )
 		self.send_message( Messages.STOP )
@@ -253,7 +252,6 @@ class ClientThread( threading.Thread ):
 		
 	def send_playing_track_position(self):
 		position = max( self.server.winamp.getPlayingTrackPosition(), 0 )
-		print repr( self.server.winamp.getPlayingTrackPosition() )
 		self.send_message( Messages.GET_PLAYING_TRACK_POSITION )
 		self.client.send( struct.pack(">I", position ) )
 		self.send_message( Messages.STOP )
